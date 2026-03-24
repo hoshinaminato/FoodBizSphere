@@ -43,14 +43,14 @@ export const ImageUploader = ({
 
   return (
     <>
-      <div className="bg-white p-5 rounded-3xl border border-neutral-200">
+      <div className="bg-white p-4 md:p-5 rounded-3xl border border-neutral-200">
         <div className="flex items-center justify-between mb-4">
-          <h4 className="text-sm font-bold text-neutral-500 uppercase tracking-widest">{label}</h4>
+          <h4 className="text-xs md:text-sm font-bold text-neutral-500 uppercase tracking-widest">{label}</h4>
           <button 
             onClick={() => fileInputRef.current?.click()}
             className="p-2 bg-neutral-100 hover:bg-neutral-200 rounded-xl transition-colors text-neutral-600"
           >
-            <Camera size={18} />
+            <Camera size={16} className="md:w-[18px] md:h-[18px]" />
           </button>
           <input 
             type="file" 
@@ -62,7 +62,7 @@ export const ImageUploader = ({
           />
         </div>
         
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-2 md:gap-3">
           {images.map(key => (
             <div 
               key={key} 
@@ -111,10 +111,10 @@ export const ImageUploader = ({
             onClick={() => setZoomedImage(null)}
           >
             <button 
-              className="absolute top-6 right-6 p-3 bg-white/10 hover:bg-white/20 text-white rounded-2xl transition-colors"
+              className="absolute top-4 right-4 md:top-6 md:right-6 p-2.5 md:p-3 bg-white/10 hover:bg-white/20 text-white rounded-2xl transition-colors"
               onClick={() => setZoomedImage(null)}
             >
-              <X size={24} />
+              <X size={20} className="md:w-6 md:h-6" />
             </button>
             <motion.img 
               initial={{ scale: 0.9, opacity: 0 }}

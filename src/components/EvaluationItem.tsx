@@ -26,20 +26,20 @@ export const EvaluationItem: React.FC<EvaluationItemProps> = ({
       <div 
         onClick={onClick}
         className={cn(
-          "p-4 rounded-2xl border transition-all cursor-pointer group",
+          "p-3.5 md:p-4 rounded-2xl border transition-all cursor-pointer group",
           isActive 
             ? "bg-orange-50 border-orange-200 shadow-sm" 
             : "border-neutral-100 hover:border-neutral-200 hover:bg-neutral-50"
         )}
       >
-        <div className="flex justify-between items-start mb-2">
+        <div className="flex justify-between items-start mb-1.5 md:mb-2">
           <span className={cn(
-            "text-xs font-bold uppercase tracking-widest",
+            "text-[10px] md:text-xs font-bold uppercase tracking-widest",
             isActive ? "text-orange-600" : "text-neutral-400"
           )}>
             {formatDate(evaluation.createdAt).split(' ')[0]}
           </span>
-          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="flex items-center gap-1 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
             <button 
               onClick={(ev) => { ev.stopPropagation(); onDuplicate(evaluation); }}
               className="p-1.5 hover:bg-white rounded-lg text-neutral-400 hover:text-neutral-600"
@@ -54,8 +54,8 @@ export const EvaluationItem: React.FC<EvaluationItemProps> = ({
             </button>
           </div>
         </div>
-        <h4 className="font-bold text-neutral-900">{evaluation.name}</h4>
-        <p className="text-xs text-neutral-500 mt-1">面积: {evaluation.area}平 | 房租: {evaluation.rent}/月</p>
+        <h4 className="text-sm md:text-base font-bold text-neutral-900 truncate">{evaluation.name}</h4>
+        <p className="text-[10px] md:text-xs text-neutral-500 mt-1">面积: {evaluation.area}平 | 房租: {evaluation.rent}/月</p>
       </div>
 
       <ConfirmModal 

@@ -20,6 +20,7 @@ export const EvaluationDetail: React.FC<EvaluationDetailProps> = ({
   onBack 
 }) => {
   const [isPhotosExpanded, setIsPhotosExpanded] = useState(false);
+  const [isSetupCostHidden, setIsSetupCostHidden] = useState(false);
 
   const handlePrint = () => {
     // Ensure the window has focus before printing
@@ -51,9 +52,11 @@ export const EvaluationDetail: React.FC<EvaluationDetailProps> = ({
 
   const dailyBreakeven = activeEval.grossMargin > 0 ? dailyFixedCost / activeEval.grossMargin : 0;
 
-  const monthlyProfit = (activeEval.estimatedDailyRevenue * activeEval.grossMargin - dailyFixedCost) * 30;
+  const dailyGrossProfit = activeEval.estimatedDailyRevenue * activeEval.grossMargin;
+  const monthlyGrossProfit = dailyGrossProfit * 30;
+  const monthlyNetProfit = (dailyGrossProfit - dailyFixedCost) * 30;
 
-  const paybackPeriod = (setupCost > 0 && monthlyProfit > 0) ? (setupCost / monthlyProfit).toFixed(1) : "无法回本";
+  const paybackPeriod = (setupCost > 0 && monthlyNetProfit > 0) ? (setupCost / monthlyNetProfit).toFixed(1) : "无法回本";
 
   const selectedDistrict = districts.find(d => d.id === activeEval.districtId);
 
@@ -68,21 +71,21 @@ export const EvaluationDetail: React.FC<EvaluationDetailProps> = ({
 
       {/* Title Section */}
       <section className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-        <div className="flex-1 group relative">
-          <div className="flex items-center gap-3 mb-1">
+        <div className="flex-1 group relative min-w-0">
+          <div className="flex items-center gap-2 md:gap-3 mb-1 min-w-0">
             <input 
-              className="text-3xl font-black bg-transparent border-none outline-none focus:ring-2 focus:ring-orange-500 rounded-xl px-2 -ml-2 w-full transition-all"
+              className="text-2xl md:text-3xl font-black bg-transparent border-none outline-none focus:ring-2 focus:ring-orange-500 rounded-xl px-2 -ml-2 w-full transition-all truncate"
               value={activeEval.name ?? ""}
               onChange={(e) => onUpdate({ name: e.target.value })}
               placeholder="输入评估名称..."
             />
-            <Pencil size={20} className="text-neutral-300 group-hover:text-orange-600 transition-colors flex-shrink-0" />
+            <Pencil size={18} className="text-neutral-300 group-hover:text-orange-600 transition-colors flex-shrink-0 md:w-5 md:h-5" />
           </div>
-          <div className="flex items-center gap-4">
-            <p className="text-neutral-400 font-medium">评估创建于 {formatDate(activeEval.createdAt)}</p>
+          <div className="flex flex-wrap items-center gap-2 md:gap-4">
+            <p className="text-[10px] md:text-sm text-neutral-400 font-medium whitespace-nowrap">评估创建于 {formatDate(activeEval.createdAt)}</p>
             {selectedDistrict && (
-              <span className="flex items-center gap-1 text-xs font-bold text-orange-600 uppercase tracking-widest bg-orange-50 px-2 py-1 rounded-lg">
-                <MapPin size={12} /> {selectedDistrict.name}
+              <span className="flex items-center gap-1 text-[10px] font-bold text-orange-600 uppercase tracking-widest bg-orange-50 px-2 py-1 rounded-lg whitespace-nowrap">
+                <MapPin size={10} /> {selectedDistrict.name}
               </span>
             )}
           </div>
@@ -135,7 +138,7 @@ export const EvaluationDetail: React.FC<EvaluationDetailProps> = ({
       </section>
 
       {/* Metrics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
         <div className="bg-neutral-900 text-white p-6 rounded-3xl shadow-xl">
           <p className="text-neutral-400 text-xs font-bold uppercase tracking-widest mb-2">建店总成本</p>
           <h3 className="text-3xl font-black">{formatCurrency(setupCost)}</h3>
@@ -160,74 +163,89 @@ export const EvaluationDetail: React.FC<EvaluationDetailProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Basic Costs */}
         <div className="space-y-6">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-1 h-6 bg-orange-600 rounded-full"></div>
-            <h3 className="text-lg font-bold">基础信息与建店成本</h3>
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <div className="w-1 h-6 bg-orange-600 rounded-full"></div>
+              <h3 className="text-lg font-bold">基础信息与建店成本</h3>
+            </div>
+            <button 
+              onClick={() => setIsSetupCostHidden(!isSetupCostHidden)}
+              className="text-xs font-bold text-orange-600 hover:bg-orange-50 px-3 py-1.5 rounded-lg transition-colors no-print"
+            >
+              {isSetupCostHidden ? "显示全部" : "隐藏建店数据"}
+            </button>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <InputField 
-              label="面积 (平)" 
-              value={activeEval.area} 
-              onChange={(v) => onUpdate({ area: v })}
-              suffix="㎡"
-            />
+            {!isSetupCostHidden && (
+              <InputField 
+                label="面积 (平)" 
+                value={activeEval.area} 
+                onChange={(v) => onUpdate({ area: v })}
+                suffix="㎡"
+              />
+            )}
             <InputField 
               label="房租 (元/月)" 
               value={activeEval.rent} 
               onChange={(v) => onUpdate({ rent: v })}
               suffix="¥"
+              tooltip="此项不仅计入首付成本，也会自动均摊到每日固定成本中。"
             />
-            <InputField 
-              label="支付方式 (月)" 
-              value={activeEval.paymentMethod} 
-              onChange={(v) => onUpdate({ paymentMethod: v })}
-              suffix="月"
-              tooltip="指首付几个月的房租，如押一付三则填3"
-            />
-            <InputField 
-              label="押金 (元)" 
-              value={activeEval.deposit} 
-              onChange={(v) => onUpdate({ deposit: v })}
-              suffix="¥"
-            />
-            <InputField 
-              label="转让/中介费" 
-              value={activeEval.transferFee} 
-              onChange={(v) => onUpdate({ transferFee: v })}
-              suffix="¥"
-            />
-            <InputField 
-              label="加盟/技术费" 
-              value={activeEval.franchiseFee} 
-              onChange={(v) => onUpdate({ franchiseFee: v })}
-              suffix="¥"
-            />
-            <InputField 
-              label="装修 + 广告" 
-              value={activeEval.renovationFee} 
-              onChange={(v) => onUpdate({ renovationFee: v })}
-              suffix="¥"
-            />
-            <InputField 
-              label="设备费用" 
-              value={activeEval.equipmentFee} 
-              onChange={(v) => onUpdate({ equipmentFee: v })}
-              suffix="¥"
-            />
-            <InputField 
-              label="首批物料" 
-              value={activeEval.initialMaterialFee} 
-              onChange={(v) => onUpdate({ initialMaterialFee: v })}
-              suffix="¥"
-            />
-            <InputField 
-              label="建店总成本" 
-              value={setupCost} 
-              readOnly
-              type="text"
-              suffix="¥"
-              tooltip="计算公式：(房租 * 支付方式) + 押金 + 转让费 + 加盟费 + 装修 + 设备 + 首批物料"
-            />
+            {!isSetupCostHidden && (
+              <>
+                <InputField 
+                  label="支付方式 (月)" 
+                  value={activeEval.paymentMethod} 
+                  onChange={(v) => onUpdate({ paymentMethod: v })}
+                  suffix="月"
+                  tooltip="指首付几个月的房租，如押一付三则填3"
+                />
+                <InputField 
+                  label="押金 (元)" 
+                  value={activeEval.deposit} 
+                  onChange={(v) => onUpdate({ deposit: v })}
+                  suffix="¥"
+                />
+                <InputField 
+                  label="转让/中介费" 
+                  value={activeEval.transferFee} 
+                  onChange={(v) => onUpdate({ transferFee: v })}
+                  suffix="¥"
+                />
+                <InputField 
+                  label="加盟/技术费" 
+                  value={activeEval.franchiseFee} 
+                  onChange={(v) => onUpdate({ franchiseFee: v })}
+                  suffix="¥"
+                />
+                <InputField 
+                  label="装修 + 广告" 
+                  value={activeEval.renovationFee} 
+                  onChange={(v) => onUpdate({ renovationFee: v })}
+                  suffix="¥"
+                />
+                <InputField 
+                  label="设备费用" 
+                  value={activeEval.equipmentFee} 
+                  onChange={(v) => onUpdate({ equipmentFee: v })}
+                  suffix="¥"
+                />
+                <InputField 
+                  label="首批物料" 
+                  value={activeEval.initialMaterialFee} 
+                  onChange={(v) => onUpdate({ initialMaterialFee: v })}
+                  suffix="¥"
+                />
+                <InputField 
+                  label="建店总成本" 
+                  value={setupCost} 
+                  readOnly
+                  type="text"
+                  suffix="¥"
+                  tooltip="计算公式：(房租 * 支付方式) + 押金 + 转让费 + 加盟费 + 装修 + 设备 + 首批物料"
+                />
+              </>
+            )}
           </div>
         </div>
 
@@ -281,12 +299,36 @@ export const EvaluationDetail: React.FC<EvaluationDetailProps> = ({
               tooltip="您预期的每日平均营业额。"
             />
             <InputField 
+              label="每日毛利" 
+              value={dailyGrossProfit.toFixed(2)} 
+              readOnly
+              type="text"
+              suffix="¥"
+              tooltip="计算公式：预估每日营业额 * 毛利率"
+            />
+            <InputField 
+              label="每月毛利" 
+              value={monthlyGrossProfit.toFixed(2)} 
+              readOnly
+              type="text"
+              suffix="¥"
+              tooltip="计算公式：每日毛利 * 30"
+            />
+            <InputField 
+              label="每月纯利" 
+              value={monthlyNetProfit.toFixed(2)} 
+              readOnly
+              type="text"
+              suffix="¥"
+              tooltip="计算公式：(每日毛利 - 每日固定成本) * 30"
+            />
+            <InputField 
               label="回本周期 (月)" 
               value={paybackPeriod} 
               readOnly
               type="text"
               suffix="月"
-              tooltip="计算公式：建店总成本 / 每月预估利润。每月预估利润 = (预估日营业额 * 毛利率 - 每日固定成本) * 30。"
+              tooltip="计算公式：建店总成本 / 每月纯利。"
             />
           </div>
         </div>
@@ -310,14 +352,8 @@ export const EvaluationDetail: React.FC<EvaluationDetailProps> = ({
           </div>
         </div>
 
-        {/* Print-only header */}
-        <div className="hidden print:flex items-center gap-2 mb-4">
-          <div className="w-1 h-6 bg-orange-600 rounded-full"></div>
-          <h3 className="text-lg font-bold">实地考察照片</h3>
-        </div>
-
         <AnimatePresence initial={false}>
-          {(isPhotosExpanded || typeof window !== 'undefined' && window.matchMedia('print').matches) && (
+          {(isPhotosExpanded || (typeof window !== 'undefined' && window.matchMedia('print').matches)) && (
             <motion.div 
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: 'auto', opacity: 1 }}
@@ -361,12 +397,6 @@ export const EvaluationDetail: React.FC<EvaluationDetailProps> = ({
           )}
         </AnimatePresence>
 
-        {/* Static fallback for printing (since motion might be tricky with print media queries in JS) */}
-        <div className="hidden print:grid grid-cols-2 gap-4">
-          {activeEval.images.dish.length > 0 && <div className="border p-2 rounded-xl">菜品照片: {activeEval.images.dish.length}张</div>}
-          {activeEval.images.menu.length > 0 && <div className="border p-2 rounded-xl">菜单照片: {activeEval.images.menu.length}张</div>}
-          {/* ... etc, but maybe just use CSS to force the motion div visible */}
-        </div>
       </section>
     </div>
   );

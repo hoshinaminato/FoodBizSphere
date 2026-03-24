@@ -9,6 +9,10 @@ interface MerchantCounterProps {
   merchant: Merchant;
   onUpdate: (updates: Partial<Merchant>) => void;
   isFocusMode?: boolean;
+  isExcluded?: boolean;
+  onToggleExclude?: () => void;
+  tempData?: { dineIn: number; takeout: number };
+  onTempUpdate?: (updates: { dineIn?: number; takeout?: number }) => void;
 }
 
 const DAY_TYPES: { value: DayType; label: string }[] = [
@@ -19,56 +23,38 @@ const DAY_TYPES: { value: DayType; label: string }[] = [
 
 const TIME_PERIODS = ['早市', '午市', '下午茶', '晚市', '夜宵'];
 
-export const MerchantCounter: React.FC<MerchantCounterProps> = ({ merchant, onUpdate, isFocusMode }) => {
+export const MerchantCounter: React.FC<MerchantCounterProps> = ({ 
+  merchant, 
+  onUpdate, 
+  isFocusMode,
+  isExcluded,
+  onToggleExclude,
+  tempData,
+  onTempUpdate
+}) => {
   const [activeRecordId, setActiveRecordId] = useState<string | null>(null);
-  const [elapsedTime, setElapsedTime] = useState<string>('00:00:00');
   const [isPhotosExpanded, setIsPhotosExpanded] = useState(false);
+  
   const isSuspicious = merchant.isBrushing || merchant.isFakeCustomers || merchant.isModifiedPOS;
 
   const records = merchant.records || [];
   const activeRecord = records.find(r => r.id === activeRecordId);
 
-  // Focus Mode Auto-start Record
+  // Focus Mode Active Record Sync
   useEffect(() => {
     if (isFocusMode && !activeRecordId) {
-      const existingActive = records.find(r => r.startTime && !r.endTime);
+      const existingActive = records[0]; 
       if (existingActive) {
         setActiveRecordId(existingActive.id);
-      } else {
-        handleAddRecord(true); // Start with timer
       }
     }
-  }, [isFocusMode]);
-
-  // Timer Update Effect
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (activeRecord?.startTime && !activeRecord?.endTime) {
-      interval = setInterval(() => {
-        const diff = Date.now() - activeRecord.startTime!;
-        const hours = Math.floor(diff / 3600000).toString().padStart(2, '0');
-        const minutes = Math.floor((diff % 3600000) / 60000).toString().padStart(2, '0');
-        const seconds = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
-        setElapsedTime(`${hours}:${minutes}:${seconds}`);
-      }, 1000);
-    } else if (activeRecord?.startTime && activeRecord?.endTime) {
-      const diff = activeRecord.endTime - activeRecord.startTime;
-      const hours = Math.floor(diff / 3600000).toString().padStart(2, '0');
-      const minutes = Math.floor((diff % 3600000) / 60000).toString().padStart(2, '0');
-      const seconds = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
-      setElapsedTime(`${hours}:${minutes}:${seconds}`);
-    } else {
-      setElapsedTime('00:00:00');
-    }
-    return () => clearInterval(interval);
-  }, [activeRecord?.startTime, activeRecord?.endTime]);
+  }, [isFocusMode, records, activeRecordId]);
 
   // Calculate averages for summary (Grouped by Date)
   const summaryData = React.useMemo(() => {
     if (records.length === 0) return {
-      customerInflow: merchant.customerInflow,
-      orderCount: merchant.orderCount,
-      takeoutOrderCount: merchant.takeoutOrderCount || 0,
+      dineInCustomerInflow: merchant.dineInCustomerInflow,
+      takeoutCustomerInflow: merchant.takeoutCustomerInflow,
       averageTransactionValue: merchant.averageTransactionValue || 0,
       employeeCount: merchant.employeeCount || 0,
     };
@@ -85,9 +71,8 @@ export const MerchantCounter: React.FC<MerchantCounterProps> = ({ merchant, onUp
     
     // Sum up each day's totals
     const dailyTotals = Object.values(dailyGroups).map(dayRecords => ({
-      customerInflow: dayRecords.reduce((sum, r) => sum + r.customerInflow, 0),
-      orderCount: dayRecords.reduce((sum, r) => sum + r.orderCount, 0),
-      takeoutOrderCount: dayRecords.reduce((sum, r) => sum + (r.takeoutOrderCount || 0), 0),
+      dineInCustomerInflow: dayRecords.reduce((sum, r) => sum + r.dineInCustomerInflow, 0),
+      takeoutCustomerInflow: dayRecords.reduce((sum, r) => sum + r.takeoutCustomerInflow, 0),
       // For transaction value and employee count, we take the average of the day's records
       averageTransactionValue: dayRecords.reduce((sum, r) => sum + (r.averageTransactionValue || 0), 0) / dayRecords.length,
       employeeCount: dayRecords.reduce((sum, r) => sum + (r.employeeCount || 0), 0) / dayRecords.length,
@@ -95,42 +80,79 @@ export const MerchantCounter: React.FC<MerchantCounterProps> = ({ merchant, onUp
 
     // Average across days
     return {
-      customerInflow: Math.round(dailyTotals.reduce((sum, d) => sum + d.customerInflow, 0) / dayCount),
-      orderCount: Math.round(dailyTotals.reduce((sum, d) => sum + d.orderCount, 0) / dayCount),
-      takeoutOrderCount: Math.round(dailyTotals.reduce((sum, d) => sum + d.takeoutOrderCount, 0) / dayCount),
+      dineInCustomerInflow: Math.round(dailyTotals.reduce((sum, d) => sum + d.dineInCustomerInflow, 0) / dayCount),
+      takeoutCustomerInflow: Math.round(dailyTotals.reduce((sum, d) => sum + d.takeoutCustomerInflow, 0) / dayCount),
       averageTransactionValue: parseFloat((dailyTotals.reduce((sum, d) => sum + d.averageTransactionValue, 0) / dayCount).toFixed(2)),
       employeeCount: Math.round(dailyTotals.reduce((sum, d) => sum + d.employeeCount, 0) / dayCount),
     };
   }, [records, merchant]);
 
   // Use active record data if available, otherwise use summary data
-  const data = activeRecord || summaryData;
-  const isSummary = activeRecordId === null;
+  const data = tempData ? { 
+    ...summaryData, 
+    dineInCustomerInflow: tempData.dineIn, 
+    takeoutCustomerInflow: tempData.takeout 
+  } : (activeRecord || summaryData);
+  
+  // In focus mode, if we're not recording (no tempData), we treat it as a summary (read-only)
+  const isSummary = isFocusMode ? !tempData : (activeRecordId === null);
 
-  const dailyRevenue = (data.orderCount + (data.takeoutOrderCount || 0)) * (data.averageTransactionValue || 0);
+  const dailyRevenue = (data.dineInCustomerInflow + data.takeoutCustomerInflow) * (data.averageTransactionValue || 0);
   const monthlyRevenue = dailyRevenue * 30;
 
   const handleUpdateData = (updates: Partial<MerchantRecord | Merchant>) => {
+    if (tempData && onTempUpdate) {
+      const tempUpdates: { dineIn?: number; takeout?: number } = {};
+      if ('dineInCustomerInflow' in updates) tempUpdates.dineIn = updates.dineInCustomerInflow as number;
+      if ('takeoutCustomerInflow' in updates) tempUpdates.takeout = updates.takeoutCustomerInflow as number;
+      onTempUpdate(tempUpdates);
+      return;
+    }
+
+    if (isFocusMode && !tempData) return; // In focus mode, must use the recording session
+
     if (isSummary) return; // Summary is read-only
     
-    if (activeRecordId) {
+    let currentActiveId = activeRecordId;
+    let currentRecords = records;
+
+    // Lazy Record Creation in Focus Mode
+    if (isFocusMode && !currentActiveId) {
+      const now = Date.now();
+      const newRecord: MerchantRecord = {
+        id: Math.random().toString(36).substr(2, 9),
+        date: now,
+        dayType: 'weekday',
+        timePeriod: '午市',
+        dineInCustomerInflow: 0,
+        takeoutCustomerInflow: 0,
+        averageTransactionValue: summaryData.averageTransactionValue || 0,
+        employeeCount: summaryData.employeeCount || 0,
+        ...(updates as Partial<MerchantRecord>)
+      };
       onUpdate({
-        records: records.map(r => r.id === activeRecordId ? { ...r, ...updates } : r)
+        records: [newRecord, ...records]
+      });
+      setActiveRecordId(newRecord.id);
+      return;
+    }
+
+    if (currentActiveId) {
+      onUpdate({
+        records: currentRecords.map(r => r.id === currentActiveId ? { ...r, ...updates } : r)
       });
     }
   };
 
-  const handleAddRecord = (startTimer: boolean = false) => {
+  const handleAddRecord = () => {
     const now = Date.now();
     const newRecord: MerchantRecord = {
       id: Math.random().toString(36).substr(2, 9),
       date: now,
       dayType: 'weekday',
       timePeriod: '午市',
-      startTime: startTimer ? now : undefined,
-      customerInflow: 0,
-      orderCount: 0,
-      takeoutOrderCount: 0,
+      dineInCustomerInflow: 0,
+      takeoutCustomerInflow: 0,
       averageTransactionValue: summaryData.averageTransactionValue || 0,
       employeeCount: summaryData.employeeCount || 0,
     };
@@ -138,18 +160,6 @@ export const MerchantCounter: React.FC<MerchantCounterProps> = ({ merchant, onUp
       records: [newRecord, ...records]
     });
     setActiveRecordId(newRecord.id);
-  };
-
-  const handleStartTimer = () => {
-    if (activeRecordId) {
-      handleUpdateData({ startTime: Date.now(), endTime: undefined });
-    }
-  };
-
-  const handleStopTimer = () => {
-    if (activeRecordId && activeRecord?.startTime) {
-      handleUpdateData({ endTime: Date.now() });
-    }
   };
 
   const handleDeleteRecord = (id: string) => {
@@ -161,21 +171,29 @@ export const MerchantCounter: React.FC<MerchantCounterProps> = ({ merchant, onUp
 
   return (
     <div className={cn(
-      "bg-white rounded-3xl border transition-all",
-      isFocusMode ? "p-8 shadow-xl border-neutral-100 ring-4 ring-orange-500/10" : "p-5 border-neutral-200",
-      isSuspicious && "border-orange-200 bg-orange-50/30"
+      "bg-white rounded-3xl border transition-all relative",
+      isFocusMode ? "p-4 lg:p-8 shadow-xl border-neutral-100 ring-4 ring-orange-500/10" : "p-4 md:p-5 border-neutral-200",
+      isSuspicious && "border-orange-200 bg-orange-50/30",
+      isExcluded && "opacity-40 grayscale"
     )}>
-      {/* Focus Mode Header */}
+      {isFocusMode && onToggleExclude && (
+        <button 
+          onClick={onToggleExclude}
+          className={cn(
+            "absolute top-4 right-4 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all z-10",
+            isExcluded 
+              ? "bg-orange-600 text-white" 
+              : "bg-neutral-100 text-neutral-400 hover:bg-neutral-200 hover:text-neutral-600"
+          )}
+        >
+          {isExcluded ? "已排除" : "排除记录"}
+        </button>
+      )}
+      {/* Focus Mode Header - Hidden timer here as it's moved to overlay */}
       {isFocusMode && (
-        <div className="mb-8 flex flex-col items-center text-center">
-          <div className="flex items-center gap-2 px-4 py-2 bg-orange-100 text-orange-600 rounded-full text-xs font-black uppercase tracking-widest mb-4 animate-pulse">
-            <Timer size={14} /> 专注蹲点中
-          </div>
-          <div className="text-7xl font-black text-neutral-900 tabular-nums tracking-tighter mb-2">
-            {elapsedTime}
-          </div>
+        <div className="mb-4 flex flex-col items-center text-center">
           <div className="text-neutral-400 font-bold text-sm">
-            已蹲点时长 · {activeRecord?.timePeriod || '实时观察'}
+            {tempData ? '正在计时记录' : (activeRecord ? `正在记录 · ${activeRecord.timePeriod}` : '实时观察')}
           </div>
         </div>
       )}
@@ -186,7 +204,7 @@ export const MerchantCounter: React.FC<MerchantCounterProps> = ({ merchant, onUp
             <input 
               className={cn(
                 "font-black text-neutral-900 bg-transparent border-none outline-none focus:ring-2 focus:ring-orange-500 rounded-lg px-1 -ml-1 w-full transition-all",
-                isFocusMode ? "text-3xl text-center" : "text-lg"
+                isFocusMode ? "text-xl md:text-3xl text-center" : "text-lg"
               )}
               value={merchant.name}
               onChange={(e) => onUpdate({ name: e.target.value })}
@@ -215,39 +233,82 @@ export const MerchantCounter: React.FC<MerchantCounterProps> = ({ merchant, onUp
         )}
       </div>
 
-      {/* Record Selector (Only if records exist) */}
+      {/* Records Table (Only if records exist) */}
       {!isFocusMode && records.length > 0 && (
-        <div className="mb-6 flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-          <button 
-            onClick={() => setActiveRecordId(null)}
-            className={cn(
-              "px-3 py-1.5 rounded-xl text-[10px] font-bold whitespace-nowrap transition-all border",
-              isSummary ? "bg-neutral-900 border-neutral-900 text-white" : "bg-white border-neutral-200 text-neutral-400"
-            )}
-          >
-            多日平均汇总
-          </button>
-          {records.map(record => (
-            <div key={record.id} className="relative group/record">
-              <button 
-                onClick={() => setActiveRecordId(record.id)}
+        <div className="mb-6 overflow-x-auto rounded-2xl border border-neutral-100 no-scrollbar">
+          <table className="w-full text-left border-collapse min-w-[500px]">
+            <thead>
+              <tr className="bg-neutral-50 border-b border-neutral-100">
+                <th className="px-4 py-3 text-[10px] font-black text-neutral-400 uppercase tracking-widest">日期/时段</th>
+                <th className="px-4 py-3 text-[10px] font-black text-neutral-400 uppercase tracking-widest text-center">堂食</th>
+                <th className="px-4 py-3 text-[10px] font-black text-neutral-400 uppercase tracking-widest text-center">外卖</th>
+                <th className="px-4 py-3 text-[10px] font-black text-neutral-400 uppercase tracking-widest text-center">客单价</th>
+                <th className="px-4 py-3 text-[10px] font-black text-neutral-400 uppercase tracking-widest text-center">员工</th>
+                <th className="px-4 py-3 text-[10px] font-black text-neutral-400 uppercase tracking-widest text-right no-print">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr 
+                onClick={() => setActiveRecordId(null)}
                 className={cn(
-                  "px-3 py-1.5 rounded-xl text-[10px] font-bold whitespace-nowrap transition-all border flex items-center gap-1.5",
-                  activeRecordId === record.id ? "bg-orange-600 border-orange-600 text-white" : "bg-white border-neutral-200 text-neutral-400"
+                  "cursor-pointer transition-colors border-b border-neutral-50 hover:bg-neutral-50/50",
+                  isSummary ? "bg-orange-50/50" : ""
                 )}
               >
-                <History size={10} />
-                {new Date(record.date).toLocaleDateString('zh-CN', { month: 'numeric', day: 'numeric' })} · {record.timePeriod}
-                {record.startTime && !record.endTime && <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />}
-              </button>
-              <button 
-                onClick={(e) => { e.stopPropagation(); handleDeleteRecord(record.id); }}
-                className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover/record:opacity-100 transition-opacity"
-              >
-                <X size={8} />
-              </button>
-            </div>
-          ))}
+                <td className="px-4 py-3">
+                  <div className="flex items-center gap-2">
+                    <div className={cn("w-2 h-2 rounded-full", isSummary ? "bg-orange-500" : "bg-neutral-200")} />
+                    <span className="text-xs font-black text-neutral-900">多日平均汇总</span>
+                  </div>
+                </td>
+                <td className="px-4 py-3 text-xs font-bold text-neutral-600 text-center">{summaryData.dineInCustomerInflow}</td>
+                <td className="px-4 py-3 text-xs font-bold text-neutral-600 text-center">{summaryData.takeoutCustomerInflow}</td>
+                <td className="px-4 py-3 text-xs font-bold text-neutral-600 text-center">¥{summaryData.averageTransactionValue}</td>
+                <td className="px-4 py-3 text-xs font-bold text-neutral-600 text-center">{summaryData.employeeCount}</td>
+                <td className="px-4 py-3 text-right no-print">
+                  <span className="text-[10px] font-bold text-neutral-300 uppercase">汇总</span>
+                </td>
+              </tr>
+              {records.map(record => (
+                <tr 
+                  key={record.id}
+                  onClick={() => setActiveRecordId(record.id)}
+                  className={cn(
+                    "cursor-pointer transition-colors border-b border-neutral-50 hover:bg-neutral-50/50",
+                    activeRecordId === record.id ? "bg-orange-50/50" : ""
+                  )}
+                >
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      <div className={cn("w-2 h-2 rounded-full", activeRecordId === record.id ? "bg-orange-500" : "bg-neutral-200")} />
+                      <div>
+                        <div className="text-xs font-black text-neutral-900">
+                          {new Date(record.date).toLocaleDateString('zh-CN', { month: 'numeric', day: 'numeric' })} · {record.timePeriod}
+                        </div>
+                        {record.startTime && record.endTime && (
+                          <div className="text-[9px] text-neutral-400 font-bold">
+                            {new Date(record.startTime).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })} - {new Date(record.endTime).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 text-xs font-bold text-neutral-600 text-center">{record.dineInCustomerInflow}</td>
+                  <td className="px-4 py-3 text-xs font-bold text-neutral-600 text-center">{record.takeoutCustomerInflow}</td>
+                  <td className="px-4 py-3 text-xs font-bold text-neutral-600 text-center">¥{record.averageTransactionValue}</td>
+                  <td className="px-4 py-3 text-xs font-bold text-neutral-600 text-center">{record.employeeCount}</td>
+                  <td className="px-4 py-3 text-right no-print">
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); handleDeleteRecord(record.id); }}
+                      className="p-1.5 text-neutral-300 hover:text-red-500 transition-colors"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
 
@@ -255,7 +316,7 @@ export const MerchantCounter: React.FC<MerchantCounterProps> = ({ merchant, onUp
       {activeRecord && (
         <div className={cn(
           "mb-6 p-4 bg-neutral-50 rounded-2xl grid gap-4",
-          isFocusMode ? "grid-cols-1" : "grid-cols-3"
+          isFocusMode ? "grid-cols-1" : "grid-cols-1 sm:grid-cols-3"
         )}>
           {!isFocusMode && (
             <>
@@ -294,33 +355,50 @@ export const MerchantCounter: React.FC<MerchantCounterProps> = ({ merchant, onUp
                   {TIME_PERIODS.map(p => <option key={p} value={p}>{p}</option>)}
                 </select>
               </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest flex items-center gap-1">
+                  <Clock size={12} /> 开始时间
+                </label>
+                <input 
+                  type="time"
+                  className="w-full bg-white border border-neutral-200 rounded-xl px-3 py-2 text-xs font-bold outline-none focus:ring-2 focus:ring-orange-500"
+                  value={activeRecord.startTime ? new Date(activeRecord.startTime).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false }) : ''}
+                  onChange={(e) => {
+                    const [hours, minutes] = e.target.value.split(':');
+                    const newDate = new Date(activeRecord.startTime || activeRecord.date);
+                    newDate.setHours(parseInt(hours), parseInt(minutes));
+                    handleUpdateData({ startTime: newDate.getTime() });
+                  }}
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest flex items-center gap-1">
+                  <Clock size={12} /> 结束时间
+                </label>
+                <input 
+                  type="time"
+                  className="w-full bg-white border border-neutral-200 rounded-xl px-3 py-2 text-xs font-bold outline-none focus:ring-2 focus:ring-orange-500"
+                  value={activeRecord.endTime ? new Date(activeRecord.endTime).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false }) : ''}
+                  onChange={(e) => {
+                    const [hours, minutes] = e.target.value.split(':');
+                    const newDate = new Date(activeRecord.endTime || activeRecord.date);
+                    newDate.setHours(parseInt(hours), parseInt(minutes));
+                    handleUpdateData({ endTime: newDate.getTime() });
+                  }}
+                />
+              </div>
             </>
           )}
 
-          {/* Timer Controls */}
+          {/* Save Controls */}
           <div className={cn("space-y-2", !isFocusMode && "col-span-3 pt-2 border-t border-neutral-200")}>
             <div className="flex items-center justify-between">
               <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest flex items-center gap-1">
-                <Timer size={12} /> 计时录入
+                <CheckCircle2 size={12} className="text-green-500" /> 实时保存状态
               </label>
-              {!isFocusMode && <span className="text-xs font-mono font-bold text-neutral-600">{elapsedTime}</span>}
-            </div>
-            <div className="flex gap-2">
-              {!activeRecord.startTime || activeRecord.endTime ? (
-                <button 
-                  onClick={handleStartTimer}
-                  className="flex-1 flex items-center justify-center gap-2 py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl text-xs font-bold transition-all"
-                >
-                  <Play size={14} /> 开始计时
-                </button>
-              ) : (
-                <button 
-                  onClick={handleStopTimer}
-                  className="flex-1 flex items-center justify-center gap-2 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold transition-all"
-                >
-                  <Square size={14} /> 停止计时
-                </button>
-              )}
+              <span className="text-[10px] font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
+                已同步
+              </span>
             </div>
           </div>
         </div>
@@ -329,37 +407,72 @@ export const MerchantCounter: React.FC<MerchantCounterProps> = ({ merchant, onUp
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Left Column: Counters and Inputs */}
         <div className={cn("space-y-6", isFocusMode && "md:col-span-2")}>
-          {/* Customer Inflow Counter */}
+          {/* Dine-in Customer Inflow Counter */}
           <div className="space-y-2">
             <label className={cn(
               "text-[10px] font-bold text-neutral-400 uppercase tracking-widest flex items-center gap-1",
               isFocusMode && "justify-center"
             )}>
-              <UsersIcon size={12} /> {isSummary ? "平均进客量" : "进客量 (实时计数)"}
+              <Store size={12} /> {isFocusMode ? (tempData ? "堂食进客量 (计时中)" : "堂食进客量 (未开始记录)") : (isSummary ? "平均堂食进客量" : "堂食进客量 (实时计数)")}
             </label>
             <div className={cn("flex items-center justify-between p-1.5 rounded-2xl", isSummary ? "bg-neutral-200/50" : "bg-neutral-100")}>
               <button 
-                onClick={() => handleUpdateData({ customerInflow: Math.max(0, data.customerInflow - 1) })}
+                onClick={() => handleUpdateData({ dineInCustomerInflow: Math.max(0, data.dineInCustomerInflow - 1) })}
                 disabled={isSummary}
                 className={cn(
                   "flex items-center justify-center bg-white rounded-xl shadow-sm hover:bg-neutral-50 active:scale-95 transition-all text-neutral-600 disabled:opacity-50 disabled:cursor-not-allowed",
-                  isFocusMode ? "w-24 h-24" : "w-10 h-10"
+                  isFocusMode ? "w-14 h-14 md:w-20 md:h-20" : "w-10 h-10"
                 )}
               >
-                <Minus size={isFocusMode ? 32 : 18} />
+                <Minus size={isFocusMode ? (window.innerWidth < 768 ? 20 : 24) : 18} />
               </button>
-              <span className={cn("font-black tabular-nums", isFocusMode ? "text-8xl" : "text-xl", isSummary && "text-neutral-500")}>
-                {data.customerInflow}
+              <span className={cn("font-black tabular-nums", isFocusMode ? "text-3xl md:text-7xl" : "text-xl", isSummary && "text-neutral-500")}>
+                {data.dineInCustomerInflow}
               </span>
               <button 
-                onClick={() => handleUpdateData({ customerInflow: data.customerInflow + 1 })}
+                onClick={() => handleUpdateData({ dineInCustomerInflow: data.dineInCustomerInflow + 1 })}
                 disabled={isSummary}
                 className={cn(
                   "flex items-center justify-center bg-neutral-900 rounded-xl shadow-sm hover:bg-neutral-800 active:scale-95 transition-all text-white disabled:opacity-50 disabled:cursor-not-allowed",
-                  isFocusMode ? "w-24 h-24" : "w-10 h-10"
+                  isFocusMode ? "w-14 h-14 md:w-20 md:h-20" : "w-10 h-10"
                 )}
               >
-                <Plus size={isFocusMode ? 32 : 18} />
+                <Plus size={isFocusMode ? (window.innerWidth < 768 ? 20 : 24) : 18} />
+              </button>
+            </div>
+          </div>
+
+          {/* Takeout Customer Inflow Counter */}
+          <div className="space-y-2">
+            <label className={cn(
+              "text-[10px] font-bold text-neutral-400 uppercase tracking-widest flex items-center gap-1",
+              isFocusMode && "justify-center"
+            )}>
+              <ShoppingBag size={12} /> {isFocusMode ? (tempData ? "外卖进客量 (计时中)" : "外卖进客量 (未开始记录)") : (isSummary ? "平均外卖进客量" : "外卖进客量 (实时计数)")}
+            </label>
+            <div className={cn("flex items-center justify-between p-1.5 rounded-2xl", isSummary ? "bg-neutral-200/50" : "bg-neutral-100")}>
+              <button 
+                onClick={() => handleUpdateData({ takeoutCustomerInflow: Math.max(0, data.takeoutCustomerInflow - 1) })}
+                disabled={isSummary}
+                className={cn(
+                  "flex items-center justify-center bg-white rounded-xl shadow-sm hover:bg-neutral-50 active:scale-95 transition-all text-neutral-600 disabled:opacity-50 disabled:cursor-not-allowed",
+                  isFocusMode ? "w-14 h-14 md:w-20 md:h-20" : "w-10 h-10"
+                )}
+              >
+                <Minus size={isFocusMode ? (window.innerWidth < 768 ? 20 : 24) : 18} />
+              </button>
+              <span className={cn("font-black tabular-nums", isFocusMode ? "text-3xl md:text-7xl" : "text-xl", isSummary && "text-neutral-500")}>
+                {data.takeoutCustomerInflow}
+              </span>
+              <button 
+                onClick={() => handleUpdateData({ takeoutCustomerInflow: data.takeoutCustomerInflow + 1 })}
+                disabled={isSummary}
+                className={cn(
+                  "flex items-center justify-center bg-neutral-900 rounded-xl shadow-sm hover:bg-neutral-800 active:scale-95 transition-all text-white disabled:opacity-50 disabled:cursor-not-allowed",
+                  isFocusMode ? "w-14 h-14 md:w-20 md:h-20" : "w-10 h-10"
+                )}
+              >
+                <Plus size={isFocusMode ? (window.innerWidth < 768 ? 20 : 24) : 18} />
               </button>
             </div>
           </div>
@@ -367,47 +480,9 @@ export const MerchantCounter: React.FC<MerchantCounterProps> = ({ merchant, onUp
           {!isFocusMode && (
             <>
               <div className="grid grid-cols-2 gap-4">
-                {/* Order Count */}
-                <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest flex items-center gap-1">
-                    <Store size={12} /> {isSummary ? "平均堂食单量" : "堂食单量"}
-                  </label>
-                  <input 
-                    type="number"
-                    min="0"
-                    disabled={isSummary}
-                    className={cn(
-                      "w-full border border-neutral-200 rounded-xl px-3 py-2 font-bold text-sm outline-none focus:ring-2 focus:ring-orange-500 transition-all",
-                      isSummary ? "bg-neutral-200/50 text-neutral-500 cursor-not-allowed" : "bg-neutral-50"
-                    )}
-                    value={data.orderCount}
-                    onChange={(e) => handleUpdateData({ orderCount: parseInt(e.target.value) || 0 })}
-                  />
-                </div>
-
-                {/* Takeout Order Count */}
-                <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest flex items-center gap-1">
-                    <ShoppingBag size={12} /> {isSummary ? "平均外卖单量" : "外卖单量"}
-                  </label>
-                  <input 
-                    type="number"
-                    min="0"
-                    disabled={isSummary}
-                    className={cn(
-                      "w-full border border-neutral-200 rounded-xl px-3 py-2 font-bold text-sm outline-none focus:ring-2 focus:ring-orange-500 transition-all",
-                      isSummary ? "bg-neutral-200/50 text-neutral-500 cursor-not-allowed" : "bg-neutral-50"
-                    )}
-                    value={data.takeoutOrderCount || 0}
-                    onChange={(e) => handleUpdateData({ takeoutOrderCount: parseInt(e.target.value) || 0 })}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
                 {/* Average Transaction Value */}
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">{isSummary ? "平均客单价 (¥)" : "人均客单价 (¥)"}</label>
+                  <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">{isSummary ? "平均客单价 (¥)" : "人均客单价 (¥)"}</label>
                   <input 
                     type="number"
                     min="0"
@@ -423,7 +498,7 @@ export const MerchantCounter: React.FC<MerchantCounterProps> = ({ merchant, onUp
 
                 {/* Employee Count */}
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">{isSummary ? "平均员工数量" : "员工数量"}</label>
+                  <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">{isSummary ? "平均员工数量" : "员工数量"}</label>
                   <input 
                     type="number"
                     min="0"

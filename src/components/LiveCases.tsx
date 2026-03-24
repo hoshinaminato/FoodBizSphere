@@ -20,28 +20,28 @@ export const LiveCases: React.FC<LiveCasesProps> = ({ onBack }) => {
   return (
     <div className="min-h-screen bg-neutral-50 text-neutral-900 font-sans">
       <header className="bg-white border-b border-neutral-200 sticky top-0 z-10">
-        <div className="max-w-5xl mx-auto px-6 h-16 flex items-center gap-4">
+        <div className="max-w-5xl mx-auto px-4 md:px-6 h-14 md:h-16 flex items-center gap-4">
           <button 
             onClick={onBack}
             className="p-2 hover:bg-neutral-100 rounded-full transition-colors"
           >
-            <ArrowLeft size={20} />
+            <ArrowLeft size={18} className="md:w-5 md:h-5" />
           </button>
-          <h1 className="text-xl font-bold tracking-tight">直播案例</h1>
+          <h1 className="text-lg md:text-xl font-bold tracking-tight">直播案例</h1>
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-6 py-12">
-        <div className="space-y-12">
+      <main className="max-w-5xl mx-auto px-4 md:px-6 py-8 md:py-12">
+        <div className="space-y-8 md:space-y-12">
           {liveCases.map((item) => (
             <div key={item.id} className="bg-white rounded-3xl border border-neutral-200 overflow-hidden shadow-sm">
               {item.title && (
-                <div className="px-8 py-6 border-b border-neutral-100 bg-neutral-50/50">
-                  <h2 className="text-2xl font-bold text-neutral-800">{item.title}</h2>
+                <div className="px-5 md:px-8 py-4 md:py-6 border-b border-neutral-100 bg-neutral-50/50">
+                  <h2 className="text-xl md:text-2xl font-bold text-neutral-800">{item.title}</h2>
                 </div>
               )}
               
-              <div className="p-8 space-y-8">
+              <div className="p-5 md:p-8 space-y-6 md:space-y-8">
                 {item.links.map((link, index) => {
                   const embedUrl = getBilibiliEmbedUrl(link);
                   

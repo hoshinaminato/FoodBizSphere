@@ -23,12 +23,12 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({ project, onClick, onDe
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white p-6 rounded-3xl border border-neutral-200 shadow-sm hover:shadow-md transition-all group cursor-pointer"
+        className="bg-white p-5 md:p-6 rounded-3xl border border-neutral-200 shadow-sm hover:shadow-md transition-all group cursor-pointer"
         onClick={onClick}
       >
         <div className="flex justify-between items-start mb-4">
-          <div className="p-3 bg-orange-50 rounded-2xl text-orange-600">
-            <Store size={24} />
+          <div className="p-2.5 md:p-3 bg-orange-50 rounded-2xl text-orange-600">
+            <Store size={20} className="md:w-6 md:h-6" />
           </div>
           <div className="flex items-center gap-1">
             <button 
@@ -36,30 +36,30 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({ project, onClick, onDe
               className="p-2 text-neutral-300 hover:text-orange-600 hover:bg-orange-50 rounded-xl transition-all"
               title="导出项目"
             >
-              <Download size={18} />
+              <Download size={16} className="md:w-[18px] md:h-[18px]" />
             </button>
             <button 
               onClick={(e) => { e.stopPropagation(); setShowRename(true); }}
               className="p-2 text-neutral-300 hover:text-orange-600 hover:bg-orange-50 rounded-xl transition-all"
               title="重命名"
             >
-              <Pencil size={18} />
+              <Pencil size={16} className="md:w-[18px] md:h-[18px]" />
             </button>
             <button 
               onClick={(e) => { e.stopPropagation(); setShowConfirm(true); }}
               className="p-2 text-neutral-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
               title="删除"
             >
-              <Trash2 size={18} />
+              <Trash2 size={16} className="md:w-[18px] md:h-[18px]" />
             </button>
           </div>
         </div>
-        <h3 className="text-xl font-bold mb-1">{project.name}</h3>
-        <p className="text-sm text-neutral-400 mb-4">创建于 {formatDate(project.createdAt)}</p>
-        <div className="flex items-center justify-between text-sm font-semibold">
+        <h3 className="text-lg md:text-xl font-bold mb-1 truncate">{project.name}</h3>
+        <p className="text-xs md:text-sm text-neutral-400 mb-4">创建于 {formatDate(project.createdAt)}</p>
+        <div className="flex items-center justify-between text-xs md:text-sm font-semibold">
           <span className="text-neutral-500">{project.evaluations.length} 个评估项</span>
           <span className="text-orange-600 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-            进入空间 <ChevronRight size={16} />
+            进入空间 <ChevronRight size={14} className="md:w-4 md:h-4" />
           </span>
         </div>
       </motion.div>

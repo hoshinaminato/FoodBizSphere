@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { MapPin, Plus, Trash2, Edit2, Users, Maximize2, ChevronRight, ChevronLeft, Store, ChevronDown, ChevronUp } from 'lucide-react';
+import { MapPin, Plus, Trash2, Edit2, Users, Maximize2, ChevronRight, ChevronLeft, Store, ChevronDown, ChevronUp, Download } from 'lucide-react';
 import { Project, BusinessDistrict, Merchant } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
-import { cn } from '../lib/utils';
+import { cn, exportToCSV, triggerPrint } from '../lib/utils';
 import { MerchantCounter } from './MerchantCounter';
 import { FocusModeOverlay } from './FocusModeOverlay';
 import { ImageUploader } from './ImageUploader';
+import { ConsumerGroupManager } from './ConsumerGroupManager';
 import { ConfirmModal } from './ui/ConfirmModal';
 import { RenameModal } from './ui/RenameModal';
 
@@ -34,12 +35,18 @@ export const DistrictManager: React.FC<DistrictManagerProps> = ({
   const [activeDistrictId, setActiveDistrictId] = useState<string | null>(districts[0]?.id || null);
   const [isFocusModeOpen, setIsFocusModeOpen] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
+  const [showMerchantDeleteConfirm, setShowMerchantDeleteConfirm] = useState<string | null>(null);
   const [showRename, setShowRename] = useState<BusinessDistrict | null>(null);
   const [mobileView, setMobileView] = useState<'list' | 'detail'>('list');
   const [isPhotosExpanded, setIsPhotosExpanded] = useState(false);
+  const [isConsumerGroupsExpanded, setIsConsumerGroupsExpanded] = useState(false);
 
   const activeDistrict = districts.find(d => d.id === activeDistrictId);
   const districtMerchants = merchants.filter(m => activeDistrict?.merchantIds?.includes(m.id));
+
+  const getMerchantDistrictCount = (merchantId: string) => {
+    return districts.filter(d => d.merchantIds?.includes(merchantId)).length;
+  };
 
   const handleDistrictSelect = (id: string) => {
     setActiveDistrictId(id);
@@ -61,13 +68,60 @@ export const DistrictManager: React.FC<DistrictManagerProps> = ({
     });
   };
 
+  const handleExportData = () => {
+    if (!activeDistrict) return;
+    
+    const exportData: any[] = [];
+    districtMerchants.forEach(m => {
+      const records = m.records || [];
+      if (records.length === 0) {
+        exportData.push({
+          '商圈': activeDistrict.name,
+          '商家名称': m.name,
+          '日期': '-',
+          '类型': '-',
+          '时段': '-',
+          '开始时间': '-',
+          '结束时间': '-',
+          '堂食进客量': 0,
+          '外卖进客量': 0,
+          '客单价': m.averageTransactionValue || 0,
+          '员工数': m.employeeCount || 0,
+          '是否刷单': m.isBrushing ? '是' : '否',
+          '是否疑似假人': m.isFakeCustomers ? '是' : '否'
+        });
+      } else {
+        records.forEach(r => {
+          const dayTypeLabel = r.dayType === 'weekday' ? '周中' : r.dayType === 'weekend' ? '周末' : '节假日';
+          exportData.push({
+            '商圈': activeDistrict.name,
+            '商家名称': m.name,
+            '日期': new Date(r.date).toLocaleDateString(),
+            '类型': dayTypeLabel,
+            '时段': r.timePeriod,
+            '开始时间': r.startTime ? new Date(r.startTime).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false }) : '-',
+            '结束时间': r.endTime ? new Date(r.endTime).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false }) : '-',
+            '堂食进客量': r.dineInCustomerInflow,
+            '外卖进客量': r.takeoutCustomerInflow,
+            '客单价': r.averageTransactionValue || 0,
+            '员工数': r.employeeCount || 0,
+            '是否刷单': m.isBrushing ? '是' : '否',
+            '是否疑似假人': m.isFakeCustomers ? '是' : '否'
+          });
+        });
+      }
+    });
+
+    exportToCSV(exportData, `${activeDistrict.name}_商家数据导出_${new Date().toLocaleDateString()}`);
+  };
+
   return (
     <div className="flex flex-col h-full bg-neutral-50">
       {/* Sidebar & Main Content Split */}
       <div className="flex flex-1 overflow-hidden relative">
         {/* Districts Sidebar */}
         <aside className={cn(
-          "w-full md:w-80 bg-white border-r border-neutral-200 flex flex-col transition-all duration-300 z-10",
+          "w-full md:w-56 lg:w-64 xl:w-80 bg-white border-r border-neutral-200 flex flex-col transition-all duration-300 z-10",
           mobileView === 'detail' ? "hidden md:flex" : "flex"
         )}>
           <div className="p-6 border-b border-neutral-100 flex items-center justify-between">
@@ -132,7 +186,7 @@ export const DistrictManager: React.FC<DistrictManagerProps> = ({
 
         {/* Merchants Main Area */}
         <main className={cn(
-          "flex-1 overflow-y-auto p-4 md:p-8 transition-all duration-300",
+          "flex-1 overflow-y-auto p-4 lg:p-8 transition-all duration-300",
           mobileView === 'list' ? "hidden md:block" : "block"
         )}>
           <AnimatePresence mode="wait">
@@ -153,7 +207,7 @@ export const DistrictManager: React.FC<DistrictManagerProps> = ({
                 </button>
 
                 {/* District Header */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
+                <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6 mb-12">
                   <div>
                     <h2 className="text-3xl md:text-4xl font-black text-neutral-900 mb-2">{activeDistrict.name}</h2>
                     <div className="flex items-center gap-4">
@@ -162,18 +216,24 @@ export const DistrictManager: React.FC<DistrictManagerProps> = ({
                       </span>
                     </div>
                   </div>
-                  <div className="flex flex-col sm:flex-row gap-3">
+                  <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-3 no-print">
+                    <button 
+                      onClick={handleExportData}
+                      className="px-3 md:px-4 py-3 bg-white border border-neutral-200 text-neutral-600 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-neutral-50 transition-all active:scale-95 text-xs md:text-sm"
+                    >
+                      <Download size={16} /> 导出 CSV
+                    </button>
                     <button 
                       onClick={() => setIsFocusModeOpen(true)}
-                      className="px-6 py-3 bg-neutral-900 text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-neutral-800 transition-all shadow-lg shadow-neutral-200 active:scale-95"
+                      className="px-4 md:px-6 py-3 bg-neutral-900 text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-neutral-800 transition-all shadow-lg shadow-neutral-200 active:scale-95 text-xs md:text-sm"
                     >
-                      <Maximize2 size={18} /> 专注蹲点模式
+                      <Maximize2 size={16} /> 专注模式
                     </button>
                     <button 
                       onClick={handleAddMerchant}
-                      className="px-6 py-3 bg-white border border-neutral-200 text-neutral-900 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-neutral-50 transition-all active:scale-95"
+                      className="px-4 md:px-6 py-3 bg-white border border-neutral-200 text-neutral-900 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-neutral-50 transition-all active:scale-95 text-xs md:text-sm"
                     >
-                      <Plus size={18} /> 添加新商家
+                      <Plus size={16} /> 新商家
                     </button>
                   </div>
                 </div>
@@ -218,23 +278,70 @@ export const DistrictManager: React.FC<DistrictManagerProps> = ({
                   </AnimatePresence>
                 </div>
 
+                {/* Consumer Groups Analysis */}
+                <div className="mb-12">
+                  <div 
+                    className="flex items-center justify-between cursor-pointer group mb-4"
+                    onClick={() => setIsConsumerGroupsExpanded(!isConsumerGroupsExpanded)}
+                  >
+                    <div className="flex items-center gap-2">
+                      <div className="w-1 h-6 bg-orange-600 rounded-full"></div>
+                      <h3 className="text-lg font-bold">消费客群分析</h3>
+                      <span className="text-xs text-neutral-400 font-medium ml-2">
+                        {activeDistrict.consumerGroups?.length || 0} 个客群
+                      </span>
+                    </div>
+                    <div className="p-2 bg-white border border-neutral-200 rounded-xl text-neutral-500 group-hover:bg-orange-50 group-hover:text-orange-600 transition-all">
+                      {isConsumerGroupsExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                    </div>
+                  </div>
+
+                  <AnimatePresence initial={false}>
+                    {isConsumerGroupsExpanded && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.3, ease: 'easeInOut' }}
+                        className="overflow-hidden"
+                      >
+                        <div className="pt-2">
+                          <ConsumerGroupManager 
+                            groups={activeDistrict.consumerGroups || []}
+                            onUpdate={(groups) => onUpdateDistrict(activeDistrict.id, { consumerGroups: groups })}
+                          />
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
                 {/* Merchants Grid */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
                   {districtMerchants.map(merchant => (
                     <div key={merchant.id} className="relative group">
                       <MerchantCounter 
                         merchant={merchant} 
                         onUpdate={(updates) => onUpdateMerchant(merchant.id, updates)} 
                       />
-                      <button 
-                        onClick={() => onUpdateDistrict(activeDistrict.id, { 
-                          merchantIds: activeDistrict.merchantIds?.filter(id => id !== merchant.id) || []
-                        })}
-                        className="absolute -top-2 -right-2 p-2 bg-white border border-neutral-200 text-neutral-400 hover:text-red-500 rounded-xl shadow-sm opacity-0 group-hover:opacity-100 transition-all"
-                        title="从商圈移除"
-                      >
-                        <Trash2 size={14} />
-                      </button>
+                      <div className="absolute -top-2 -right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                        <button 
+                          onClick={() => onUpdateDistrict(activeDistrict.id, { 
+                            merchantIds: activeDistrict.merchantIds?.filter(id => id !== merchant.id) || []
+                          })}
+                          className="p-2 bg-white border border-neutral-200 text-neutral-400 hover:text-orange-600 rounded-xl shadow-sm"
+                          title="从当前商圈移除"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                        <button 
+                          onClick={() => setShowMerchantDeleteConfirm(merchant.id)}
+                          className="p-2 bg-white border border-neutral-200 text-neutral-400 hover:text-red-600 rounded-xl shadow-sm"
+                          title="彻底删除商家"
+                        >
+                          <Trash2 size={14} className="fill-current opacity-20" />
+                        </button>
+                      </div>
                     </div>
                   ))}
                   
@@ -294,6 +401,23 @@ export const DistrictManager: React.FC<DistrictManagerProps> = ({
         onConfirm={() => showDeleteConfirm && onDeleteDistrict(showDeleteConfirm)}
         title="删除商圈"
         description="确定要删除这个商圈吗？商家数据将保留在项目中，但关联关系将丢失。"
+      />
+
+      <ConfirmModal 
+        isOpen={!!showMerchantDeleteConfirm}
+        onClose={() => setShowMerchantDeleteConfirm(null)}
+        onConfirm={() => {
+          if (showMerchantDeleteConfirm) {
+            onDeleteMerchant(showMerchantDeleteConfirm);
+            setShowMerchantDeleteConfirm(null);
+          }
+        }}
+        title="彻底删除商家"
+        description={
+          showMerchantDeleteConfirm && getMerchantDistrictCount(showMerchantDeleteConfirm) > 1
+            ? `警告：该商家目前在 ${getMerchantDistrictCount(showMerchantDeleteConfirm)} 个商圈中被使用。删除后将从所有商圈中移除且无法恢复。确定要继续吗？`
+            : "确定要彻底删除这个商家吗？该操作将删除所有相关的进客量记录且无法恢复。"
+        }
       />
 
       <RenameModal 

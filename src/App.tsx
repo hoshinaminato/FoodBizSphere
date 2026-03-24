@@ -62,28 +62,28 @@ export default function App() {
   return (
     <div className="min-h-screen bg-neutral-50 text-neutral-900 font-sans selection:bg-orange-100">
       {!activeProjectId ? (
-        <div className="max-w-4xl mx-auto px-6 py-12">
-          <header className="mb-12 flex justify-between items-end">
+        <div className="max-w-6xl mx-auto px-4 md:px-6 py-8 md:py-12">
+          <header className="mb-12 flex flex-col md:flex-row justify-between items-start md:items-end gap-6 md:gap-4">
             <div>
-              <h1 className="text-4xl font-bold tracking-tight text-neutral-900 mb-2">FoodBizSphere</h1>
+              <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-neutral-900 mb-2">FoodBizSphere</h1>
               <p className="text-neutral-500 font-medium">餐饮经营评估与选址决策系统</p>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex flex-wrap items-center gap-3 md:gap-4 w-full md:w-auto">
               <button 
                 onClick={() => setCurrentView('liveCases')}
-                className="bg-white border border-neutral-200 hover:bg-neutral-50 text-neutral-700 px-6 py-3 rounded-2xl font-semibold flex items-center gap-2 transition-all shadow-sm"
+                className="flex-1 md:flex-none bg-white border border-neutral-200 hover:bg-neutral-50 text-neutral-700 px-4 md:px-6 py-3 rounded-2xl font-semibold flex items-center justify-center gap-2 transition-all shadow-sm text-sm md:text-base"
               >
-                <Play size={20} className="text-orange-600" />
+                <Play size={18} className="text-orange-600" />
                 直播案例
               </button>
-              <label className="bg-white border border-neutral-200 hover:bg-neutral-50 text-neutral-700 px-6 py-3 rounded-2xl font-semibold flex items-center gap-2 transition-all shadow-sm cursor-pointer">
-                <Upload size={20} className="text-orange-600" />
+              <label className="flex-1 md:flex-none bg-white border border-neutral-200 hover:bg-neutral-50 text-neutral-700 px-4 md:px-6 py-3 rounded-2xl font-semibold flex items-center justify-center gap-2 transition-all shadow-sm cursor-pointer text-sm md:text-base">
+                <Upload size={18} className="text-orange-600" />
                 导入项目
                 <input type="file" accept=".fbs" className="hidden" onChange={handleImport} />
               </label>
               <button 
                 onClick={createProject}
-                className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 rounded-2xl font-semibold flex items-center gap-2 transition-all shadow-lg shadow-orange-200"
+                className="w-full md:w-auto bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 rounded-2xl font-semibold flex items-center justify-center gap-2 transition-all shadow-lg shadow-orange-200 text-sm md:text-base"
               >
                 <Plus size={20} />
                 创建新空间
@@ -91,7 +91,7 @@ export default function App() {
             </div>
           </header>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
             {projects.map(project => (
               <ProjectCard 
                 key={project.id}
@@ -110,20 +110,20 @@ export default function App() {
           </div>
         </div>
       ) : (
-        <div className="flex flex-col h-screen">
+        <div className="flex flex-col h-[100dvh]">
           <ProjectHeader 
-            projectName={activeProject?.name ?? ""}
+            project={activeProject!}
             onBack={() => { setActiveProjectId(null); setActiveEvalId(null); }}
             onUpdateName={(name) => updateProjectName(activeProjectId, name)}
             onCreateEvaluation={() => createEvaluation(activeProjectId)}
           />
 
           {/* Tab Navigation */}
-          <div className="bg-white px-6 border-b border-neutral-200 flex items-center gap-8">
+          <div className="bg-white px-6 border-b border-neutral-200 flex items-center gap-4 md:gap-8 overflow-x-auto no-scrollbar">
             <button 
               onClick={() => setActiveTab('evaluations')}
               className={cn(
-                "py-4 text-xs font-black uppercase tracking-widest border-b-2 transition-all",
+                "py-4 text-[10px] md:text-xs font-black uppercase tracking-widest border-b-2 transition-all whitespace-nowrap",
                 activeTab === 'evaluations' ? "border-orange-600 text-orange-600" : "border-transparent text-neutral-400 hover:text-neutral-600"
               )}
             >
@@ -132,7 +132,7 @@ export default function App() {
             <button 
               onClick={() => setActiveTab('districts')}
               className={cn(
-                "py-4 text-xs font-black uppercase tracking-widest border-b-2 transition-all",
+                "py-4 text-[10px] md:text-xs font-black uppercase tracking-widest border-b-2 transition-all whitespace-nowrap",
                 activeTab === 'districts' ? "border-orange-600 text-orange-600" : "border-transparent text-neutral-400 hover:text-neutral-600"
               )}
             >
@@ -144,7 +144,7 @@ export default function App() {
             {activeTab === 'evaluations' ? (
               <>
                 {/* Evaluation List (Left Sidebar) - Hidden on mobile */}
-                <aside className="w-80 border-r border-neutral-200 bg-white overflow-y-auto hidden md:block">
+                <aside className="w-56 lg:w-64 xl:w-80 border-r border-neutral-200 bg-white overflow-y-auto hidden md:block">
                   <div className="p-4 space-y-3">
                     {activeProject?.evaluations.map(e => (
                       <EvaluationItem 
@@ -165,7 +165,7 @@ export default function App() {
                 </aside>
 
                 {/* Main Content (Evaluation Detail or Mobile List) */}
-                <main className="flex-1 overflow-y-auto bg-neutral-50 p-4 md:p-8">
+                <main className="flex-1 overflow-y-auto bg-neutral-50 p-4 lg:p-8">
                   {!activeEvalId ? (
                     <div className="h-full">
                       {/* Mobile List View */}

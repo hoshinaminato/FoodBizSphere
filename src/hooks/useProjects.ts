@@ -17,11 +17,18 @@ export function useProjects() {
         evaluations: p.evaluations || [],
         districts: (p.districts || []).map(d => ({
           ...d,
-          images: d.images || []
+          images: d.images || [],
+          consumerGroups: d.consumerGroups || []
         })),
         merchants: (p.merchants || []).map(m => ({
           ...m,
-          records: m.records || []
+          records: (m.records || []).map(r => ({
+            ...r,
+            dineInCustomerInflow: r.dineInCustomerInflow ?? (r as any).customerInflow ?? 0,
+            takeoutCustomerInflow: r.takeoutCustomerInflow ?? 0
+          })),
+          dineInCustomerInflow: m.dineInCustomerInflow ?? (m as any).customerInflow ?? 0,
+          takeoutCustomerInflow: m.takeoutCustomerInflow ?? 0
         }))
       }));
       setProjects(migrated);
@@ -56,6 +63,7 @@ export function useProjects() {
       name,
       images: [],
       merchantIds: [],
+      consumerGroups: [],
       createdAt: Date.now()
     };
     setProjects(prev => prev.map(p => p.id === projectId ? { 
@@ -86,11 +94,10 @@ export function useProjects() {
       id: merchantId,
       name,
       images: [],
-      orderCount: 0,
-      takeoutOrderCount: 0,
       averageTransactionValue: 0,
       employeeCount: 0,
-      customerInflow: 0,
+      dineInCustomerInflow: 0,
+      takeoutCustomerInflow: 0,
       isRealData: true,
       isBrushing: false,
       isFakeCustomers: false,

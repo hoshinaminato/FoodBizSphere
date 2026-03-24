@@ -1,6 +1,14 @@
 @import "tailwindcss";
 
 @layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
@@ -12,22 +20,71 @@
 
 @layer base {
   @media print {
-    .no-print {
+    /* Hide UI elements */
+    .no-print, aside, nav, header, button, [role="button"], .lucide {
       display: none !important;
     }
     
-    body, html {
+    /* Reset layout for print */
+    body, html, #root, .flex-1, main, .overflow-hidden, .overflow-y-auto, .overflow-x-auto {
       background: white !important;
       color: black !important;
       height: auto !important;
+      min-height: auto !important;
       overflow: visible !important;
+      position: static !important;
     }
 
-    .flex-1, main, aside, div {
-      overflow: visible !important;
-      height: auto !important;
+    /* Force grid to block for better flow - REMOVED GLOBAL BLOCK */
+    
+    /* Better grid handling for print */
+    .grid {
+      display: grid !important;
+      gap: 1rem !important;
     }
 
+    /* Force 2 columns on print for most grids to avoid squishing */
+    .grid-cols-2, .grid-cols-3, .grid-cols-4, .lg\:grid-cols-3, .sm\:grid-cols-2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+    
+    /* Some sections should stay single column */
+    .print-single-col {
+      grid-template-columns: 1fr !important;
+    }
+
+    /* Style cards for print */
+    .bg-white, .bg-neutral-50, .bg-neutral-900 {
+      background: white !important;
+      color: black !important;
+      border: 1px solid #eee !important;
+    }
+
+    .text-white, .text-neutral-400, .text-neutral-500 {
+      color: black !important;
+    }
+
+    .rounded-3xl, .rounded-2xl, .rounded-xl {
+      border-radius: 0.5rem !important;
+    }
+
+    .shadow-xl, .shadow-lg, .shadow-md, .shadow-sm {
+      box-shadow: none !important;
+    }
+
+    /* Input styling for print */
+    input, select, textarea {
+      border: none !important;
+      background: transparent !important;
+      padding: 0 !important;
+      appearance: none !important;
+      -webkit-appearance: none !important;
+      color: black !important;
+      font-weight: bold !important;
+      width: auto !important;
+    }
+
+    /* Container adjustments */
     .print-container {
       width: 100% !important;
       max-width: none !important;
@@ -37,12 +94,15 @@
 
     .print-card {
       break-inside: avoid;
-      border: 1px solid #e5e5e5 !important;
-      box-shadow: none !important;
+      margin-bottom: 2rem !important;
+      padding: 1.5rem !important;
     }
 
-    aside, nav, header, button, .no-print {
-      display: none !important;
+    /* Ensure images are visible */
+    img {
+      max-width: 100% !important;
+      height: auto !important;
+      break-inside: avoid;
     }
   }
 }
