@@ -1,0 +1,48 @@
+@import "tailwindcss";
+
+@layer utilities {
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+@layer base {
+  @media print {
+    .no-print {
+      display: none !important;
+    }
+    
+    body, html {
+      background: white !important;
+      color: black !important;
+      height: auto !important;
+      overflow: visible !important;
+    }
+
+    .flex-1, main, aside, div {
+      overflow: visible !important;
+      height: auto !important;
+    }
+
+    .print-container {
+      width: 100% !important;
+      max-width: none !important;
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+
+    .print-card {
+      break-inside: avoid;
+      border: 1px solid #e5e5e5 !important;
+      box-shadow: none !important;
+    }
+
+    aside, nav, header, button, .no-print {
+      display: none !important;
+    }
+  }
+}
