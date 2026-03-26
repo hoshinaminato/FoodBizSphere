@@ -12,6 +12,7 @@ import { EvaluationItem } from './components/EvaluationItem';
 import { EvaluationDetail } from './components/EvaluationDetail';
 import { DistrictManager } from './components/DistrictManager';
 import { LiveCases } from './components/LiveCases';
+import { FloatingToolbar } from './components/FloatingToolbar';
 import { cn } from './lib/utils';
 
 export default function App() {
@@ -237,6 +238,7 @@ export default function App() {
           </div>
         </div>
       )}
+      <FloatingToolbar />
     </div>
   );
 }
