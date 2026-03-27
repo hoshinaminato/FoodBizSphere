@@ -157,7 +157,7 @@ export function useProjects() {
         initialMaterialFee: 0,
         monthlyLabor: 0,
         monthlyUtilities: 0,
-        grossMargin: 0.6,
+        grossMargin: 0,
         estimatedDailyRevenue: 0,
         images: { dish: [], menu: [], interior: [], exterior: [], reviews: [] }
       };
@@ -187,6 +187,29 @@ export function useProjects() {
   const deleteEvaluation = (projectId: string, evalId: string) => {
     setProjects(prev => prev.map(p => p.id === projectId ? { ...p, evaluations: p.evaluations.filter(e => e.id !== evalId) } : p));
     if (activeEvalId === evalId) setActiveEvalId(null);
+  };
+
+  const clearEvaluationData = (projectId: string, evalId: string) => {
+    setProjects(prev => prev.map(p => p.id === projectId ? {
+      ...p,
+      evaluations: p.evaluations.map(e => e.id === evalId ? {
+        ...e,
+        area: 0,
+        rent: 0,
+        paymentMethod: 1,
+        deposit: 0,
+        transferFee: 0,
+        franchiseFee: 0,
+        renovationFee: 0,
+        equipmentFee: 0,
+        initialMaterialFee: 0,
+        monthlyLabor: 0,
+        monthlyUtilities: 0,
+        grossMargin: 0,
+        estimatedDailyRevenue: 0,
+        images: { dish: [], menu: [], interior: [], exterior: [], reviews: [] }
+      } : e)
+    } : p));
   };
 
   const exportProject = async (projectId: string) => {
@@ -278,6 +301,7 @@ export function useProjects() {
     createMerchant,
     updateMerchant,
     deleteMerchant,
+    clearEvaluationData,
     exportProject,
     importProject
   };

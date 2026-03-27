@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { X, Delete, Copy, ClipboardPaste } from 'lucide-react';
+import { cn } from '../lib/utils';
 
 interface CalculatorProps {
   onClose: () => void;
@@ -10,6 +11,7 @@ export const Calculator: React.FC<CalculatorProps> = ({ onClose }) => {
   const [equation, setEquation] = useState('');
   const [shouldReset, setShouldReset] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const showStatus = (msg: string) => {
     setStatus(msg);
@@ -17,26 +19,59 @@ export const Calculator: React.FC<CalculatorProps> = ({ onClose }) => {
   };
 
   const handleNumber = (num: string) => {
-    if (display === '0' || shouldReset) {
+    if (display === '0' || shouldReset || display === 'Error') {
       setDisplay(num);
       setShouldReset(false);
     } else {
-      setDisplay(display + num);
+      // Limit length to prevent overflow
+      if (display.length < 15) {
+        setDisplay(display + num);
+      }
     }
   };
 
   const handleOperator = (op: string) => {
-    setEquation(display + ' ' + op + ' ');
+    if (display === 'Error') return;
+
+    const displayOp = op === '*' ? '×' : op === '/' ? '÷' : op;
+
+    if (shouldReset && equation) {
+      // If we just pressed an operator, replace the last one in the equation
+      const parts = equation.trim().split(' ');
+      if (parts.length > 0) {
+        parts[parts.length - 1] = displayOp;
+        setEquation(parts.join(' ') + ' ');
+      }
+      return;
+    }
+
+    // Append current display and operator to the equation
+    setEquation(prev => prev + display + ' ' + displayOp + ' ');
     setShouldReset(true);
   };
 
   const handleCalculate = () => {
     try {
+      if (!equation) return;
       const fullEquation = equation + display;
+      
+      // Clean up the equation for evaluation: replace display symbols with math symbols
+      const sanitizedEquation = fullEquation
+        .replace(/×/g, '*')
+        .replace(/÷/g, '/');
+      
       // Using Function constructor as a safer alternative to eval for simple math
-      // In a real app, use a math library or a proper parser
-      const result = new Function(`return ${fullEquation.replace(/×/g, '*').replace(/÷/g, '/')}`)();
-      setDisplay(String(Number(result.toFixed(8))));
+      const result = new Function(`return ${sanitizedEquation}`)();
+      
+      // Handle division by zero or invalid results
+      if (!isFinite(result)) {
+        setDisplay('Error');
+      } else {
+        // Format result: avoid too many decimals, handle precision
+        const formattedResult = Number(result.toFixed(10));
+        setDisplay(String(formattedResult));
+      }
+      
       setEquation('');
       setShouldReset(true);
     } catch (error) {
@@ -58,6 +93,47 @@ export const Calculator: React.FC<CalculatorProps> = ({ onClose }) => {
       setDisplay('0');
     }
   };
+
+  // Keyboard support
+  useEffect(() => {
+    // Simple check to avoid keyboard linkage on mobile/tablet as requested
+    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    if (isTouchDevice) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // If user is typing in an input or textarea, don't intercept keys
+      if (
+        document.activeElement?.tagName === 'INPUT' || 
+        document.activeElement?.tagName === 'TEXTAREA' ||
+        (document.activeElement as HTMLElement)?.isContentEditable
+      ) {
+        return;
+      }
+
+      // Prevent default behavior for keys we handle (like backspace or space)
+      const handledKeys = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '+', '-', '*', '/', 'Enter', '=', 'Backspace', 'Delete', 'Escape', 'c', 'C'];
+      if (handledKeys.includes(e.key)) {
+        e.preventDefault();
+      }
+
+      if (/[0-9]/.test(e.key)) {
+        handleNumber(e.key);
+      } else if (e.key === '.') {
+        handleNumber('.');
+      } else if (['+', '-', '*', '/'].includes(e.key)) {
+        handleOperator(e.key);
+      } else if (e.key === 'Enter' || e.key === '=') {
+        handleCalculate();
+      } else if (e.key === 'Backspace') {
+        handleBackspace();
+      } else if (e.key === 'Escape' || e.key === 'Delete' || e.key.toLowerCase() === 'c') {
+        handleClear();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [display, equation, shouldReset]);
 
   const handleCopy = async () => {
     try {
@@ -118,11 +194,16 @@ export const Calculator: React.FC<CalculatorProps> = ({ onClose }) => {
   ];
 
   return (
-    <div className="bg-white rounded-3xl shadow-2xl border border-neutral-200 w-72 overflow-hidden select-none">
-      <div className="bg-neutral-900 p-6 text-right">
+    <div 
+      ref={containerRef}
+      className="bg-white rounded-3xl shadow-2xl border border-neutral-200 w-72 overflow-hidden select-none outline-none relative"
+    >
+      <div className="bg-neutral-900 p-6 text-right relative">
         <div className="flex justify-between items-center mb-2">
-          <span className="text-neutral-500 text-[10px] font-bold uppercase tracking-widest">计算器</span>
-          <button onClick={onClose} className="text-neutral-500 hover:text-white transition-colors">
+          <div className="flex items-center gap-2">
+            <span className="text-neutral-500 text-[10px] font-bold uppercase tracking-widest">计算器</span>
+          </div>
+          <button onClick={onClose} className="text-neutral-500 hover:text-white transition-colors z-20">
             <X size={16} />
           </button>
         </div>
@@ -140,12 +221,15 @@ export const Calculator: React.FC<CalculatorProps> = ({ onClose }) => {
         {buttons.map((btn, i) => (
           <button
             key={i}
-            onClick={btn.action}
+            onClick={(e) => {
+              e.stopPropagation();
+              btn.action();
+            }}
             title={btn.title}
-            className={`
-              h-12 rounded-xl font-bold text-sm transition-all active:scale-95 flex items-center justify-center
-              ${btn.className || 'bg-white text-neutral-900 hover:bg-neutral-100 border border-neutral-200 shadow-sm'}
-            `}
+            className={cn(
+              "h-12 rounded-xl font-bold text-sm transition-all active:scale-95 flex items-center justify-center",
+              btn.className || 'bg-white text-neutral-900 hover:bg-neutral-100 border border-neutral-200 shadow-sm'
+            )}
           >
             {btn.label}
           </button>

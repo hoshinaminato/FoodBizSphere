@@ -37,6 +37,7 @@ export default function App() {
     createMerchant,
     updateMerchant,
     deleteMerchant,
+    clearEvaluationData,
     exportProject,
     importProject
   } = useProjects();

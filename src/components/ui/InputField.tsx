@@ -34,10 +34,17 @@ export const InputField = ({
     <div className="relative">
       <input
         type={type}
-        value={value ?? (type === "number" ? 0 : "")}
-        onChange={(e) => onChange?.(type === "number" ? parseFloat(e.target.value) || 0 : e.target.value)}
+        value={type === "number" && value === 0 ? "" : (value ?? "")}
+        onChange={(e) => {
+          if (type === "number") {
+            const val = e.target.value === "" ? 0 : parseFloat(e.target.value);
+            onChange?.(isNaN(val) ? 0 : val);
+          } else {
+            onChange?.(e.target.value);
+          }
+        }}
         readOnly={readOnly}
-        placeholder={placeholder}
+        placeholder={placeholder || (type === "number" ? "0" : "")}
         className={cn(
           "w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-900 focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all outline-none",
           readOnly && "bg-neutral-50 text-neutral-500 font-medium"
