@@ -27,7 +27,7 @@ export const FranchiseAnalysisSection: React.FC<FranchiseAnalysisSectionProps> =
             <CheckCircle2 className="text-orange-600 print:text-black" size={20} />
           </div>
           <div>
-            <h3 className="text-lg font-bold">加盟分析</h3>
+            <h3 className="text-lg font-bold print:text-xl print:font-black print:uppercase print:tracking-tighter">加盟分析</h3>
             <p className="text-xs text-neutral-400">针对加盟品牌的深度评估</p>
           </div>
         </div>
@@ -160,7 +160,7 @@ export const FranchiseAnalysisSection: React.FC<FranchiseAnalysisSectionProps> =
                   label="真实门店验证"
                   value={franchise.hasRealStoreVerification}
                   onChange={(v) => onUpdate({ hasRealStoreVerification: v })}
-                  tooltip="是否实地考察过正在营业的加盟店？"
+                  tooltip="是否实地考察过正在营业的加盟店？要在路边、商场的，不要在公司里的样板房"
                 />
                 <ToggleField 
                   label="是否推荐"
@@ -259,6 +259,7 @@ export const FranchiseAnalysisSection: React.FC<FranchiseAnalysisSectionProps> =
                     { id: 'suggest', label: '仅建议' },
                     { id: 'none', label: '不参与' }
                   ]}
+                  tooltip="小心选址老师从中作梗"
                 />
                 <SelectionField 
                   label="盈利推算方式"
@@ -289,6 +290,9 @@ export const FranchiseAnalysisSection: React.FC<FranchiseAnalysisSectionProps> =
               <h4 className="text-sm font-bold text-neutral-900 flex items-center gap-2">
                 <div className="w-1.5 h-1.5 bg-orange-600 rounded-full"></div>
                 运营支持
+                <Tooltip text="核心关注：这些支持的钱谁出？（品牌方还是加盟商）">
+                  <Info size={14} className="text-neutral-400 cursor-help no-print" />
+                </Tooltip>
               </h4>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="flex items-center justify-between p-3 bg-neutral-50 rounded-2xl border border-neutral-100">

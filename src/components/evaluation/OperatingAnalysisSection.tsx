@@ -26,8 +26,8 @@ export const OperatingAnalysisSection: React.FC<OperatingAnalysisSectionProps> =
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2 mb-2">
-        <div className="w-1 h-6 bg-orange-600 rounded-full"></div>
-        <h3 className="text-lg font-bold">运营成本与利润</h3>
+        <div className="w-1 h-6 bg-orange-600 rounded-full print:bg-black"></div>
+        <h3 className="text-lg font-bold print:text-xl print:font-black print:uppercase print:tracking-tighter">运营成本与利润</h3>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <InputField 

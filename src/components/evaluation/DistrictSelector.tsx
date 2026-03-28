@@ -26,13 +26,18 @@ export const DistrictSelector: React.FC<DistrictSelectorProps> = ({
             key={district.id}
             onClick={() => onSelect(selectedId === district.id ? undefined : district.id)}
             className={cn(
-              "px-4 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2 border",
+              "px-4 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2 border relative",
               selectedId === district.id 
-                ? "bg-orange-600 border-orange-600 text-white shadow-lg shadow-orange-100" 
-                : "bg-white border-neutral-200 text-neutral-500 hover:border-neutral-300"
+                ? "bg-orange-600 border-orange-600 text-white shadow-lg shadow-orange-100 print:bg-neutral-50 print:text-black print:border-black print:border-2" 
+                : "bg-white border-neutral-200 text-neutral-500 hover:border-neutral-300 print:text-neutral-300 print:border-dashed"
             )}
           >
             <MapPin size={14} /> {district.name}
+            {selectedId === district.id && (
+              <div className="hidden print:block absolute -top-1 -right-1 bg-black text-white rounded-full w-3 h-3 flex items-center justify-center text-[8px]">
+                ✓
+              </div>
+            )}
           </button>
         ))}
         {districts.length === 0 && (

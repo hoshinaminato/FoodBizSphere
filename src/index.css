@@ -21,7 +21,7 @@
 @layer base {
   @media print {
     /* Hide UI elements */
-    .no-print, aside, nav, header, button, [role="button"], .lucide {
+    .no-print, aside, nav, header, button, [role="button"], .lucide:not(.print-show) {
       display: none !important;
     }
     
@@ -33,14 +33,14 @@
       min-height: auto !important;
       overflow: visible !important;
       position: static !important;
+      margin: 0 !important;
+      padding: 0 !important;
     }
 
-    /* Force grid to block for better flow - REMOVED GLOBAL BLOCK */
-    
     /* Better grid handling for print */
     .grid {
       display: grid !important;
-      gap: 1rem !important;
+      gap: 1.5rem !important;
     }
 
     /* Force 2 columns on print for most grids to avoid squishing */
@@ -48,20 +48,22 @@
       grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
     }
     
-    /* Some sections should stay single column */
-    .print-single-col {
-      grid-template-columns: 1fr !important;
+    /* Force single column for main sections in print to use full width */
+    .print-main-grid {
+      display: block !important;
     }
 
     /* Style cards for print */
     .bg-white, .bg-neutral-50, .bg-neutral-900 {
       background: white !important;
       color: black !important;
-      border: 1px solid #eee !important;
+      border: 1px solid #ddd !important;
+      padding: 2rem !important;
+      margin-bottom: 2rem !important;
     }
 
     .text-white, .text-neutral-400, .text-neutral-500 {
-      color: black !important;
+      color: #333 !important;
     }
 
     .rounded-3xl, .rounded-2xl, .rounded-xl {
@@ -81,21 +83,29 @@
       -webkit-appearance: none !important;
       color: black !important;
       font-weight: bold !important;
-      width: auto !important;
+      width: 100% !important;
     }
 
     /* Container adjustments */
     .print-container {
       width: 100% !important;
       max-width: none !important;
-      padding: 0 !important;
+      padding: 1cm !important;
       margin: 0 !important;
     }
 
-    .print-card {
-      break-inside: avoid;
-      margin-bottom: 2rem !important;
-      padding: 1.5rem !important;
+    /* Page break utilities */
+    .print-break-before {
+      break-before: page !important;
+      padding-top: 1cm !important;
+    }
+
+    .print-break-after {
+      break-after: page !important;
+    }
+
+    .print-break-inside-avoid {
+      break-inside: avoid !important;
     }
 
     /* Ensure images are visible */
@@ -103,6 +113,22 @@
       max-width: 100% !important;
       height: auto !important;
       break-inside: avoid;
+      border-radius: 4px !important;
+    }
+
+    /* Force background colors for specific elements if possible */
+    .print-force-bg {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    /* Custom selection indicator for print */
+    .print-selected {
+      background-color: #000 !important;
+      color: #fff !important;
+      border: 2px solid #000 !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
     }
   }
 }

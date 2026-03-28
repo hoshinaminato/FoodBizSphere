@@ -27,19 +27,24 @@ export const SelectionField: React.FC<SelectionFieldProps> = ({
         </Tooltip>
       )}
     </div>
-    <div className="flex flex-wrap bg-neutral-100 p-1 rounded-xl gap-1">
+    <div className="flex flex-wrap bg-neutral-100 p-1 rounded-xl gap-1 print:bg-transparent print:p-0 print:border print:border-neutral-200">
       {options.map((opt) => (
         <button
           key={opt.id}
           onClick={() => onChange(opt.id)}
           className={cn(
-            "flex-1 min-w-[60px] py-2 text-xs font-bold rounded-lg transition-all",
+            "flex-1 min-w-[60px] py-2 text-xs font-bold rounded-lg transition-all relative",
             value === opt.id 
-              ? "bg-white text-orange-600 shadow-sm border-2 border-orange-600 print:border-2 print:border-black print:text-black" 
-              : "text-neutral-400 hover:text-neutral-600 print:text-neutral-300"
+              ? "bg-white text-orange-600 shadow-sm border-2 border-orange-600 print:border-2 print:border-black print:text-black print:bg-neutral-50" 
+              : "text-neutral-400 hover:text-neutral-600 print:text-neutral-300 print:border print:border-transparent"
           )}
         >
           {opt.label}
+          {value === opt.id && (
+            <div className="hidden print:block absolute -top-1 -right-1 bg-black text-white rounded-full w-3 h-3 flex items-center justify-center text-[8px]">
+              ✓
+            </div>
+          )}
         </button>
       ))}
     </div>
@@ -68,28 +73,38 @@ export const ToggleField: React.FC<ToggleFieldProps> = ({
         </Tooltip>
       )}
     </div>
-    <div className="flex bg-neutral-100 p-1 rounded-xl gap-1">
+    <div className="flex bg-neutral-100 p-1 rounded-xl gap-1 print:bg-transparent print:p-0 print:border print:border-neutral-200">
       <button
         onClick={() => onChange(true)}
         className={cn(
-          "flex-1 py-2 text-xs font-bold rounded-lg transition-all",
+          "flex-1 py-2 text-xs font-bold rounded-lg transition-all relative",
           value === true 
-            ? "bg-white text-orange-600 shadow-sm border-2 border-orange-600 print:border-2 print:border-black print:text-black" 
-            : "text-neutral-400 hover:text-neutral-600 print:text-neutral-300"
+            ? "bg-white text-orange-600 shadow-sm border-2 border-orange-600 print:border-2 print:border-black print:text-black print:bg-neutral-50" 
+            : "text-neutral-400 hover:text-neutral-600 print:text-neutral-300 print:border print:border-transparent"
         )}
       >
         是
+        {value === true && (
+          <div className="hidden print:block absolute -top-1 -right-1 bg-black text-white rounded-full w-3 h-3 flex items-center justify-center text-[8px]">
+            ✓
+          </div>
+        )}
       </button>
       <button
         onClick={() => onChange(false)}
         className={cn(
-          "flex-1 py-2 text-xs font-bold rounded-lg transition-all",
+          "flex-1 py-2 text-xs font-bold rounded-lg transition-all relative",
           value === false 
-            ? "bg-white text-orange-600 shadow-sm border-2 border-orange-600 print:border-2 print:border-black print:text-black" 
-            : "text-neutral-400 hover:text-neutral-600 print:text-neutral-300"
+            ? "bg-white text-orange-600 shadow-sm border-2 border-orange-600 print:border-2 print:border-black print:text-black print:bg-neutral-50" 
+            : "text-neutral-400 hover:text-neutral-600 print:text-neutral-300 print:border print:border-transparent"
         )}
       >
         否
+        {value === false && (
+          <div className="hidden print:block absolute -top-1 -right-1 bg-black text-white rounded-full w-3 h-3 flex items-center justify-center text-[8px]">
+            ✓
+          </div>
+        )}
       </button>
     </div>
   </div>

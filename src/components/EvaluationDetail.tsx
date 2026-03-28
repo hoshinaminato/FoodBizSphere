@@ -132,39 +132,47 @@ export const EvaluationDetail: React.FC<EvaluationDetailProps> = ({
       />
 
       {/* Form Sections */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <CostAnalysisSection 
-          evaluation={activeEval}
-          onUpdate={onUpdate}
-          setupCost={setupCost}
-          isHidden={isSetupCostHidden}
-          onToggleHidden={() => setIsSetupCostHidden(!isSetupCostHidden)}
-        />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 print:grid-cols-1 print:gap-0">
+        <div className="print:break-before-page print:pt-8">
+          <CostAnalysisSection 
+            evaluation={activeEval}
+            onUpdate={onUpdate}
+            setupCost={setupCost}
+            isHidden={isSetupCostHidden}
+            onToggleHidden={() => setIsSetupCostHidden(!isSetupCostHidden)}
+          />
+        </div>
 
-        <OperatingAnalysisSection 
-          evaluation={activeEval}
-          onUpdate={onUpdate}
-          dailyFixedCost={dailyFixedCost}
-          dailyBreakeven={dailyBreakeven}
-          dailyGrossProfit={dailyGrossProfit}
-          monthlyGrossProfit={monthlyGrossProfit}
-          monthlyNetProfit={monthlyNetProfit}
-          paybackPeriod={paybackPeriod}
-        />
+        <div className="print:break-before-page print:pt-8">
+          <OperatingAnalysisSection 
+            evaluation={activeEval}
+            onUpdate={onUpdate}
+            dailyFixedCost={dailyFixedCost}
+            dailyBreakeven={dailyBreakeven}
+            dailyGrossProfit={dailyGrossProfit}
+            monthlyGrossProfit={monthlyGrossProfit}
+            monthlyNetProfit={monthlyNetProfit}
+            paybackPeriod={paybackPeriod}
+          />
+        </div>
 
-        <FranchiseAnalysisSection 
-          franchise={franchise}
-          onUpdate={updateFranchise}
-        />
+        <div className="lg:col-span-2 print:break-before-page print:pt-8">
+          <FranchiseAnalysisSection 
+            franchise={franchise}
+            onUpdate={updateFranchise}
+          />
+        </div>
       </div>
 
       {/* Photos Section */}
-      <PhotoSection 
-        photos={activeEval.photos || []}
-        onUpdate={(photos) => onUpdate({ photos })}
-        isExpanded={isPhotosExpanded}
-        onToggle={() => setIsPhotosExpanded(!isPhotosExpanded)}
-      />
+      <div className="print:break-before-page print:pt-8">
+        <PhotoSection 
+          photos={activeEval.photos || []}
+          onUpdate={(photos) => onUpdate({ photos })}
+          isExpanded={isPhotosExpanded}
+          onToggle={() => setIsPhotosExpanded(!isPhotosExpanded)}
+        />
+      </div>
     </div>
   );
 };
