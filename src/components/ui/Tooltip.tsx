@@ -11,12 +11,13 @@ export const Tooltip = ({ text, children }: { text: string; children: React.Reac
       <AnimatePresence>
         {show && (
           <motion.div 
-            initial={{ opacity: 0, y: 5 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 5 }}
-            className="absolute z-50 w-64 p-3 mt-2 text-sm text-white bg-neutral-900 rounded-xl shadow-xl -left-1/2 transform translate-x-1/4"
+            initial={{ opacity: 0, y: 5, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 5, scale: 0.95 }}
+            className="absolute z-[9999] w-max max-w-[280px] p-3 mb-2 text-sm text-white bg-neutral-900 rounded-xl shadow-2xl bottom-full left-1/2 -translate-x-1/2 whitespace-pre-line text-left pointer-events-none"
           >
             {text}
+            <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-neutral-900" />
           </motion.div>
         )}
       </AnimatePresence>

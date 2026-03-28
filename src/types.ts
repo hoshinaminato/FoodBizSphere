@@ -46,6 +46,7 @@ export interface ConsumerGroup {
   customName?: string;
   description?: string;
   population: number;
+  tenantRatio?: number;
 }
 
 export interface BusinessDistrict {
@@ -58,6 +59,35 @@ export interface BusinessDistrict {
   createdAt: number;
 }
 
+export interface FranchiseAnalysis {
+  enabled: boolean;
+  motivation: string;
+  platformSource: string;
+  isIntercepted: boolean;
+  visitedHeadquarters: boolean;
+  tasteEvaluation: string;
+  supportContent: string[];
+  hasRealStoreVerification: boolean;
+  franchiseeCount: number;
+  averageRevenue: number;
+  isRecommended: boolean;
+  feeType: 'one-time' | 'annual';
+  franchiseFee: number;
+  locationFee: number;
+  materialFee: number;
+  equipmentFee: number;
+  brandType: string;
+  locationSupport: boolean;
+  travelExpenses: number;
+  transferFeeIssue: string;
+  calculationMethod: string;
+  comparisonWithOthers: string;
+  paidAmount: number;
+  takeoutManagement: boolean;
+  influencerPromotion: boolean;
+  dailyOperation: boolean;
+}
+
 export interface Evaluation {
   id: string;
   name: string;
@@ -67,6 +97,8 @@ export interface Evaluation {
   
   // Basic Info
   area: number;
+  outdoorArea: number;
+  fumeType: 'none' | 'light' | 'heavy';
   rent: number;
   paymentMethod: number; // months
   deposit: number;
@@ -81,6 +113,10 @@ export interface Evaluation {
   monthlyUtilities: number;
   grossMargin: number; // percentage (0-1)
   estimatedDailyRevenue: number;
+  averageTransactionValue: number;
+  
+  // Franchise Analysis
+  franchiseAnalysis?: FranchiseAnalysis;
   
   // Images
   images: {

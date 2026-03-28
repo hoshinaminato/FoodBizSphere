@@ -263,7 +263,7 @@ export const DistrictManager: React.FC<DistrictManagerProps> = ({
                         animate={{ height: 'auto', opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
                         transition={{ duration: 0.3, ease: 'easeInOut' }}
-                        className="overflow-hidden"
+                        className={cn("overflow-hidden", isPhotosExpanded && "overflow-visible")}
                       >
                         <div className="pt-2">
                           <ImageUploader 
@@ -271,6 +271,7 @@ export const DistrictManager: React.FC<DistrictManagerProps> = ({
                             images={activeDistrict.images || []} 
                             onUpload={(url) => onUpdateDistrict(activeDistrict.id, { images: [...(activeDistrict.images || []), url] })}
                             onDelete={(url) => onUpdateDistrict(activeDistrict.id, { images: (activeDistrict.images || []).filter(u => u !== url) })}
+                            hint={`- 客流方向\n- 头尾位置\n- 分支流量`}
                           />
                         </div>
                       </motion.div>
@@ -303,7 +304,7 @@ export const DistrictManager: React.FC<DistrictManagerProps> = ({
                         animate={{ height: 'auto', opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
                         transition={{ duration: 0.3, ease: 'easeInOut' }}
-                        className="overflow-hidden"
+                        className={cn("overflow-hidden", isConsumerGroupsExpanded && "overflow-visible")}
                       >
                         <div className="pt-2">
                           <ConsumerGroupManager 

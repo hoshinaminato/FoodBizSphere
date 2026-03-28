@@ -1,16 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Camera, Image as ImageIcon, X, ZoomIn } from 'lucide-react';
+import { Camera, Image as ImageIcon, X, ZoomIn, HelpCircle } from 'lucide-react';
 import { saveImage, loadImage, deleteImage } from '../lib/storage';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
+import { Tooltip } from './ui/Tooltip';
 
 export const ImageUploader = ({ 
   label, 
+  hint,
   images, 
   onUpload, 
   onDelete 
 }: { 
   label: string; 
+  hint?: string;
   images: string[]; 
   onUpload: (url: string) => void; 
   onDelete: (url: string) => void;
@@ -43,9 +46,16 @@ export const ImageUploader = ({
 
   return (
     <>
-      <div className="bg-white p-4 md:p-5 rounded-3xl border border-neutral-200">
+      <div className="bg-white p-4 md:p-5 rounded-3xl border border-neutral-200 flex flex-col h-full">
         <div className="flex items-center justify-between mb-4">
-          <h4 className="text-xs md:text-sm font-bold text-neutral-500 uppercase tracking-widest">{label}</h4>
+          <div className="flex items-center gap-2">
+            <h4 className="text-xs md:text-sm font-bold text-neutral-500 uppercase tracking-widest">{label}</h4>
+            {hint && (
+              <Tooltip text={hint}>
+                <HelpCircle size={14} className="text-neutral-300 cursor-help hover:text-orange-500 transition-colors" />
+              </Tooltip>
+            )}
+          </div>
           <button 
             onClick={() => fileInputRef.current?.click()}
             className="p-2 bg-neutral-100 hover:bg-neutral-200 rounded-xl transition-colors text-neutral-600"
@@ -62,7 +72,7 @@ export const ImageUploader = ({
           />
         </div>
         
-        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-2 md:gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-2 md:gap-3 mt-auto">
           {images.map(key => (
             <div 
               key={key} 

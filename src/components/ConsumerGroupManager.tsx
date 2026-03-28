@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Users, Plus, Trash2, Edit2, GraduationCap, Home, Building2, HelpCircle } from 'lucide-react';
+import { Users, Plus, Trash2, Edit2, GraduationCap, Home, Building2, HelpCircle, Info } from 'lucide-react';
 import { ConsumerGroup, ConsumerGroupType } from '../types';
 import { cn } from '../lib/utils';
+import { Tooltip } from './ui/Tooltip';
 
 interface ConsumerGroupManagerProps {
   groups: ConsumerGroup[];
@@ -34,6 +35,7 @@ export const ConsumerGroupManager: React.FC<ConsumerGroupManagerProps> = ({ grou
   const [newGroupType, setNewGroupType] = useState<ConsumerGroupType>('school');
   const [newGroupName, setNewGroupName] = useState('');
   const [newGroupPopulation, setNewGroupPopulation] = useState<number>(0);
+  const [newGroupTenantRatio, setNewGroupTenantRatio] = useState<number>(0);
 
   const handleAdd = () => {
     const newGroup: ConsumerGroup = {
@@ -41,20 +43,22 @@ export const ConsumerGroupManager: React.FC<ConsumerGroupManagerProps> = ({ grou
       type: newGroupType,
       customName: newGroupType === 'other' ? newGroupName : undefined,
       description: GROUP_CONFIG[newGroupType].description,
-      population: newGroupPopulation
+      population: newGroupPopulation,
+      tenantRatio: newGroupType === 'residential' ? newGroupTenantRatio : undefined
     };
     onUpdate([...groups, newGroup]);
     setIsAdding(false);
     setNewGroupName('');
     setNewGroupPopulation(0);
+    setNewGroupTenantRatio(0);
   };
 
   const handleDelete = (id: string) => {
     onUpdate(groups.filter(g => g.id !== id));
   };
 
-  const handleUpdatePopulation = (id: string, population: number) => {
-    onUpdate(groups.map(g => g.id === id ? { ...g, population } : g));
+  const handleUpdateField = (id: string, updates: Partial<ConsumerGroup>) => {
+    onUpdate(groups.map(g => g.id === id ? { ...g, ...updates } : g));
   };
 
   return (
@@ -105,7 +109,12 @@ export const ConsumerGroupManager: React.FC<ConsumerGroupManagerProps> = ({ grou
               </div>
             )}
             <div className="space-y-1.5">
-              <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">预估人数</label>
+              <div className="flex items-center gap-1">
+                <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">预估人数</label>
+                <Tooltip text="目标客户（年龄、喜好）">
+                  <Info size={12} className="text-neutral-400 cursor-help" />
+                </Tooltip>
+              </div>
               <input 
                 type="number"
                 placeholder="输入人数"
@@ -114,6 +123,26 @@ export const ConsumerGroupManager: React.FC<ConsumerGroupManagerProps> = ({ grou
                 onChange={(e) => setNewGroupPopulation(parseInt(e.target.value) || 0)}
               />
             </div>
+            {newGroupType === 'residential' && (
+              <div className="space-y-1.5">
+                <div className="flex items-center gap-1">
+                  <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">租户占比</label>
+                  <Tooltip text="刚需注意">
+                    <Info size={12} className="text-neutral-400 cursor-help" />
+                  </Tooltip>
+                </div>
+                <div className="relative">
+                  <input 
+                    type="number"
+                    placeholder="输入百分比"
+                    className="w-full bg-neutral-50 border border-neutral-200 rounded-xl px-3 py-2 pr-8 text-sm font-bold outline-none focus:ring-2 focus:ring-orange-500"
+                    value={newGroupTenantRatio || ''}
+                    onChange={(e) => setNewGroupTenantRatio(parseInt(e.target.value) || 0)}
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-neutral-400">%</span>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="flex gap-2">
@@ -161,19 +190,50 @@ export const ConsumerGroupManager: React.FC<ConsumerGroupManagerProps> = ({ grou
                 </button>
               </div>
               
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest flex items-center gap-1">
-                  预估人数
-                </label>
-                <div className="flex items-center gap-2">
-                  <input 
-                    type="number"
-                    className="flex-1 bg-neutral-50 border border-neutral-100 rounded-lg px-2 py-1 text-sm font-black text-neutral-900 outline-none focus:ring-2 focus:ring-orange-500"
-                    value={group.population}
-                    onChange={(e) => handleUpdatePopulation(group.id, parseInt(e.target.value) || 0)}
-                  />
-                  <span className="text-xs font-bold text-neutral-400">人</span>
+              <div className="space-y-3">
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-1">
+                    <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">
+                      预估人数
+                    </label>
+                    <Tooltip text="目标客户（年龄、喜好）">
+                      <Info size={12} className="text-neutral-400 cursor-help" />
+                    </Tooltip>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input 
+                      type="number"
+                      className="flex-1 bg-neutral-50 border border-neutral-100 rounded-lg px-2 py-1 text-sm font-black text-neutral-900 outline-none focus:ring-2 focus:ring-orange-500"
+                      value={group.population}
+                      onChange={(e) => handleUpdateField(group.id, { population: parseInt(e.target.value) || 0 })}
+                    />
+                    <span className="text-xs font-bold text-neutral-400">人</span>
+                  </div>
                 </div>
+
+                {group.type === 'residential' && (
+                  <div className="space-y-1.5">
+                    <div className="flex items-center gap-1">
+                      <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">
+                        租户占比
+                      </label>
+                      <Tooltip text="刚需注意">
+                        <Info size={12} className="text-neutral-400 cursor-help" />
+                      </Tooltip>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="relative flex-1">
+                        <input 
+                          type="number"
+                          className="w-full bg-neutral-50 border border-neutral-100 rounded-lg px-2 py-1 pr-6 text-sm font-black text-neutral-900 outline-none focus:ring-2 focus:ring-orange-500"
+                          value={group.tenantRatio || 0}
+                          onChange={(e) => handleUpdateField(group.id, { tenantRatio: parseInt(e.target.value) || 0 })}
+                        />
+                        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-bold text-neutral-400">%</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           );
