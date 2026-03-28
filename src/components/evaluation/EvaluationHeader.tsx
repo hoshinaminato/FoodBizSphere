@@ -21,25 +21,21 @@ export const EvaluationHeader: React.FC<EvaluationHeaderProps> = ({
   isIframe
 }) => {
   return (
-    <section className="flex flex-col md:flex-row md:items-end justify-between gap-4 relative">
-      <div className="hidden print:block absolute -top-12 left-0 right-0 text-center border-b-2 border-black pb-4 mb-8">
-        <h1 className="text-4xl font-black uppercase tracking-tighter">餐饮开店评估报告</h1>
-        <p className="text-sm font-bold text-neutral-500 mt-2">PROFESSIONAL RESTAURANT EVALUATION REPORT</p>
-      </div>
+    <section className="flex flex-col md:flex-row md:items-end justify-between gap-4">
       <div className="flex-1 group relative min-w-0">
         <div className="flex items-center gap-2 md:gap-3 mb-1 min-w-0">
           <input 
-            className="text-2xl md:text-3xl font-black bg-transparent border-none outline-none focus:ring-2 focus:ring-orange-500 rounded-xl px-2 -ml-2 w-full transition-all truncate print:text-black print:px-0 print:ml-0"
+            className="text-2xl md:text-3xl font-black bg-transparent border-none outline-none focus:ring-2 focus:ring-orange-500 rounded-xl px-2 -ml-2 w-full transition-all truncate"
             value={activeEval.name ?? ""}
             onChange={(e) => onUpdate({ name: e.target.value })}
             placeholder="输入评估名称..."
           />
-          <Pencil size={18} className="text-neutral-300 group-hover:text-orange-600 transition-colors flex-shrink-0 md:w-5 md:h-5 no-print" />
+          <Pencil size={18} className="text-neutral-300 group-hover:text-orange-600 transition-colors flex-shrink-0 md:w-5 md:h-5" />
         </div>
         <div className="flex flex-wrap items-center gap-2 md:gap-4">
-          <p className="text-[10px] md:text-sm text-neutral-400 font-medium whitespace-nowrap print:text-black">评估创建于 {formatDate(activeEval.createdAt)}</p>
+          <p className="text-[10px] md:text-sm text-neutral-400 font-medium whitespace-nowrap">评估创建于 {formatDate(activeEval.createdAt)}</p>
           {districtName && (
-            <span className="flex items-center gap-1 text-[10px] font-bold text-orange-600 uppercase tracking-widest bg-orange-50 px-2 py-1 rounded-lg whitespace-nowrap print:bg-transparent print:text-black print:border print:border-black">
+            <span className="flex items-center gap-1 text-[10px] font-bold text-orange-600 uppercase tracking-widest bg-orange-50 px-2 py-1 rounded-lg whitespace-nowrap">
               <MapPin size={10} /> {districtName}
             </span>
           )}

@@ -46,12 +46,12 @@ export const InputField = ({
         readOnly={readOnly}
         placeholder={placeholder || (type === "number" ? "0" : "")}
         className={cn(
-          "w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-900 focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all outline-none print:border-black print:text-black print:px-0 print:py-1 print:rounded-none print:border-b",
-          readOnly && "bg-neutral-50 text-neutral-500 font-medium print:bg-transparent print:text-black"
+          "w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-900 focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all outline-none",
+          readOnly && "bg-neutral-50 text-neutral-500 font-medium"
         )}
       />
       {suffix && (
-        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400 text-sm font-medium print:right-0 print:text-black">
+        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400 text-sm font-medium">
           {suffix}
         </span>
       )}

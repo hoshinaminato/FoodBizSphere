@@ -20,115 +20,37 @@
 
 @layer base {
   @media print {
-    /* Hide UI elements */
-    .no-print, aside, nav, header, button, [role="button"], .lucide:not(.print-show) {
+    /* Ensure colors and backgrounds are printed */
+    * {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    /* Hide only strictly UI elements */
+    .no-print, .no-print *, button.no-print, .pencil-icon {
       display: none !important;
     }
     
-    /* Reset layout for print */
-    body, html, #root, .flex-1, main, .overflow-hidden, .overflow-y-auto, .overflow-x-auto {
+    /* Reset body for print */
+    body {
       background: white !important;
-      color: black !important;
-      height: auto !important;
-      min-height: auto !important;
-      overflow: visible !important;
-      position: static !important;
-      margin: 0 !important;
-      padding: 0 !important;
+      margin: 0;
+      padding: 0;
     }
 
-    /* Better grid handling for print */
+    /* Ensure the main container fills the page */
+    #root {
+      width: 100% !important;
+    }
+
+    /* Keep layout structure but allow page breaks */
     .grid {
-      display: grid !important;
       gap: 1.5rem !important;
     }
 
-    /* Force 2 columns on print for most grids to avoid squishing */
-    .grid-cols-2, .grid-cols-3, .grid-cols-4, .lg\:grid-cols-3, .sm\:grid-cols-2 {
-      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    }
-    
-    /* Force single column for main sections in print to use full width */
-    .print-main-grid {
-      display: block !important;
-    }
-
-    /* Style cards for print */
-    .bg-white, .bg-neutral-50, .bg-neutral-900 {
-      background: white !important;
-      color: black !important;
-      border: 1px solid #ddd !important;
-      padding: 2rem !important;
-      margin-bottom: 2rem !important;
-    }
-
-    .text-white, .text-neutral-400, .text-neutral-500 {
-      color: #333 !important;
-    }
-
-    .rounded-3xl, .rounded-2xl, .rounded-xl {
-      border-radius: 0.5rem !important;
-    }
-
-    .shadow-xl, .shadow-lg, .shadow-md, .shadow-sm {
-      box-shadow: none !important;
-    }
-
-    /* Input styling for print */
-    input, select, textarea {
-      border: none !important;
-      background: transparent !important;
-      padding: 0 !important;
-      appearance: none !important;
-      -webkit-appearance: none !important;
-      color: black !important;
-      font-weight: bold !important;
-      width: 100% !important;
-    }
-
-    /* Container adjustments */
-    .print-container {
-      width: 100% !important;
-      max-width: none !important;
-      padding: 1cm !important;
-      margin: 0 !important;
-    }
-
-    /* Page break utilities */
-    .print-break-before {
-      break-before: page !important;
-      padding-top: 1cm !important;
-    }
-
-    .print-break-after {
-      break-after: page !important;
-    }
-
-    .print-break-inside-avoid {
-      break-inside: avoid !important;
-    }
-
-    /* Ensure images are visible */
-    img {
-      max-width: 100% !important;
-      height: auto !important;
+    /* Avoid breaking inside cards */
+    section, .bg-white, .rounded-3xl {
       break-inside: avoid;
-      border-radius: 4px !important;
-    }
-
-    /* Force background colors for specific elements if possible */
-    .print-force-bg {
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-    }
-
-    /* Custom selection indicator for print */
-    .print-selected {
-      background-color: #000 !important;
-      color: #fff !important;
-      border: 2px solid #000 !important;
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
     }
   }
 }

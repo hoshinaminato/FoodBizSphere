@@ -24,8 +24,8 @@ export const CostAnalysisSection: React.FC<CostAnalysisSectionProps> = ({
     <div className="space-y-6">
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
-          <div className="w-1 h-6 bg-orange-600 rounded-full print:bg-black"></div>
-          <h3 className="text-lg font-bold print:text-xl print:font-black print:uppercase print:tracking-tighter">基础信息与建店成本</h3>
+          <div className="w-1 h-6 bg-orange-600 rounded-full"></div>
+          <h3 className="text-lg font-bold">基础信息与建店成本</h3>
         </div>
         <button 
           onClick={onToggleHidden}
@@ -56,7 +56,7 @@ export const CostAnalysisSection: React.FC<CostAnalysisSectionProps> = ({
                   <Info size={14} className="text-neutral-400 cursor-help" />
                 </Tooltip>
               </div>
-              <div className="flex bg-neutral-100 p-1 rounded-xl gap-1 print:bg-transparent print:p-0 print:border print:border-neutral-200">
+              <div className="flex bg-neutral-100 p-1 rounded-xl gap-1">
                 {[
                   { id: 'none', label: '无' },
                   { id: 'light', label: '轻油' },
@@ -68,13 +68,13 @@ export const CostAnalysisSection: React.FC<CostAnalysisSectionProps> = ({
                     className={cn(
                       "flex-1 py-2 text-xs font-bold rounded-lg transition-all relative",
                       evaluation.fumeType === opt.id 
-                        ? "bg-white text-orange-600 shadow-sm border-2 border-orange-600 print:border-2 print:border-black print:text-black print:bg-neutral-50" 
-                        : "text-neutral-400 hover:text-neutral-600 print:text-neutral-300 print:border print:border-transparent"
+                        ? "bg-white text-orange-600 shadow-sm border-2 border-orange-600" 
+                        : "text-neutral-400 hover:text-neutral-600"
                     )}
                   >
                     {opt.label}
                     {evaluation.fumeType === opt.id && (
-                      <div className="hidden print:block absolute -top-1 -right-1 bg-black text-white rounded-full w-3 h-3 flex items-center justify-center text-[8px]">
+                      <div className="hidden print:block absolute -top-1 -right-1 bg-orange-600 text-white rounded-full w-3 h-3 flex items-center justify-center text-[8px] shadow-sm">
                         ✓
                       </div>
                     )}

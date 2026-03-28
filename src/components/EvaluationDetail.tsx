@@ -132,8 +132,8 @@ export const EvaluationDetail: React.FC<EvaluationDetailProps> = ({
       />
 
       {/* Form Sections */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 print:grid-cols-1 print:gap-0">
-        <div className="print:break-before-page print:pt-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div>
           <CostAnalysisSection 
             evaluation={activeEval}
             onUpdate={onUpdate}
@@ -143,7 +143,7 @@ export const EvaluationDetail: React.FC<EvaluationDetailProps> = ({
           />
         </div>
 
-        <div className="print:break-before-page print:pt-8">
+        <div>
           <OperatingAnalysisSection 
             evaluation={activeEval}
             onUpdate={onUpdate}
@@ -156,7 +156,7 @@ export const EvaluationDetail: React.FC<EvaluationDetailProps> = ({
           />
         </div>
 
-        <div className="lg:col-span-2 print:break-before-page print:pt-8">
+        <div className="lg:col-span-2">
           <FranchiseAnalysisSection 
             franchise={franchise}
             onUpdate={updateFranchise}
@@ -165,7 +165,7 @@ export const EvaluationDetail: React.FC<EvaluationDetailProps> = ({
       </div>
 
       {/* Photos Section */}
-      <div className="print:break-before-page print:pt-8">
+      <div>
         <PhotoSection 
           photos={activeEval.photos || []}
           onUpdate={(photos) => onUpdate({ photos })}
