@@ -19,7 +19,7 @@ export const ProjectHeader: React.FC<ProjectHeaderProps> = ({
   const [isEditing, setIsEditing] = useState(false);
 
   return (
-    <header className="bg-white border-b border-neutral-200 px-4 md:px-6 py-3 md:py-4 flex items-center justify-between sticky top-0 z-40">
+    <header className="bg-white border-b border-neutral-200 px-4 md:px-6 py-3 md:py-4 flex items-center justify-between sticky top-0 z-40 no-print">
       <div className="flex items-center gap-2 md:gap-4 flex-1 min-w-0">
         <button 
           onClick={onBack}

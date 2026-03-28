@@ -27,20 +27,34 @@
     }
 
     /* Hide only strictly UI elements */
-    .no-print, .no-print *, button.no-print, .pencil-icon {
+    .no-print, .no-print *, button.no-print, .pencil-icon, aside {
       display: none !important;
     }
     
     /* Reset body for print */
-    body {
+    body, html, #root {
       background: white !important;
       margin: 0;
       padding: 0;
+      height: auto !important;
+      min-height: auto !important;
+      overflow: visible !important;
+    }
+
+    /* Ensure all scrollable containers show full content in print */
+    .flex-1, main, .overflow-hidden, .overflow-y-auto, .overflow-x-auto {
+      height: auto !important;
+      min-height: auto !important;
+      overflow: visible !important;
+      position: static !important;
+      display: block !important;
     }
 
     /* Ensure the main container fills the page */
-    #root {
+    #root, .max-w-5xl {
       width: 100% !important;
+      max-width: none !important;
+      padding-bottom: 0 !important;
     }
 
     /* Keep layout structure but allow page breaks */

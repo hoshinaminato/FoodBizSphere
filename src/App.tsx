@@ -121,7 +121,7 @@ export default function App() {
           />
 
           {/* Tab Navigation */}
-          <div className="bg-white px-6 border-b border-neutral-200 flex items-center gap-4 md:gap-8 overflow-x-auto no-scrollbar">
+          <div className="bg-white px-6 border-b border-neutral-200 flex items-center gap-4 md:gap-8 overflow-x-auto no-scrollbar no-print">
             <button 
               onClick={() => setActiveTab('evaluations')}
               className={cn(
