@@ -17,11 +17,14 @@ export const FranchiseAnalysisSection: React.FC<FranchiseAnalysisSectionProps> =
   onUpdate
 }) => {
   return (
-    <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-neutral-100 space-y-8">
+    <div className={cn(
+      "bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-neutral-100 space-y-8",
+      !franchise.enabled && "print:hidden"
+    )}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-orange-50 rounded-2xl flex items-center justify-center">
-            <CheckCircle2 className="text-orange-600" size={20} />
+          <div className="w-10 h-10 bg-orange-50 rounded-2xl flex items-center justify-center print:border print:border-neutral-200">
+            <CheckCircle2 className="text-orange-600 print:text-black" size={20} />
           </div>
           <div>
             <h3 className="text-lg font-bold">加盟分析</h3>
@@ -31,7 +34,7 @@ export const FranchiseAnalysisSection: React.FC<FranchiseAnalysisSectionProps> =
         <button
           onClick={() => onUpdate({ enabled: !franchise.enabled })}
           className={cn(
-            "px-4 py-2 rounded-xl text-sm font-bold transition-all",
+            "px-4 py-2 rounded-xl text-sm font-bold transition-all print:hidden",
             franchise.enabled 
               ? "bg-orange-600 text-white shadow-lg shadow-orange-200" 
               : "bg-neutral-100 text-neutral-500 hover:bg-neutral-200"
@@ -144,8 +147,8 @@ export const FranchiseAnalysisSection: React.FC<FranchiseAnalysisSectionProps> =
                         className={cn(
                           "px-3 py-1.5 rounded-lg text-xs font-bold transition-all border",
                           (franchise.supportContent || []).includes(item.id)
-                            ? "bg-orange-50 border-orange-200 text-orange-600"
-                            : "bg-white border-neutral-200 text-neutral-400 hover:border-neutral-300"
+                            ? "bg-orange-50 border-orange-200 text-orange-600 print:border-black print:text-black"
+                            : "bg-white border-neutral-200 text-neutral-400 hover:border-neutral-300 print:text-neutral-300"
                         )}
                       >
                         {item.label}
@@ -290,48 +293,57 @@ export const FranchiseAnalysisSection: React.FC<FranchiseAnalysisSectionProps> =
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="flex items-center justify-between p-3 bg-neutral-50 rounded-2xl border border-neutral-100">
                   <span className="text-xs font-bold text-neutral-600">外卖代运营</span>
-                  <button 
-                    onClick={() => onUpdate({ takeoutManagement: !franchise.takeoutManagement })}
-                    className={cn(
-                      "w-10 h-6 rounded-full transition-all relative",
-                      franchise.takeoutManagement ? "bg-orange-600" : "bg-neutral-200"
-                    )}
-                  >
-                    <div className={cn(
-                      "absolute top-1 w-4 h-4 bg-white rounded-full transition-all",
-                      franchise.takeoutManagement ? "left-5" : "left-1"
-                    )} />
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <span className="hidden print:inline text-xs font-bold text-black">{franchise.takeoutManagement ? "是" : "否"}</span>
+                    <button 
+                      onClick={() => onUpdate({ takeoutManagement: !franchise.takeoutManagement })}
+                      className={cn(
+                        "w-10 h-6 rounded-full transition-all relative print:hidden",
+                        franchise.takeoutManagement ? "bg-orange-600" : "bg-neutral-200"
+                      )}
+                    >
+                      <div className={cn(
+                        "absolute top-1 w-4 h-4 bg-white rounded-full transition-all",
+                        franchise.takeoutManagement ? "left-5" : "left-1"
+                      )} />
+                    </button>
+                  </div>
                 </div>
                 <div className="flex items-center justify-between p-3 bg-neutral-50 rounded-2xl border border-neutral-100">
                   <span className="text-xs font-bold text-neutral-600">达人推广</span>
-                  <button 
-                    onClick={() => onUpdate({ influencerPromotion: !franchise.influencerPromotion })}
-                    className={cn(
-                      "w-10 h-6 rounded-full transition-all relative",
-                      franchise.influencerPromotion ? "bg-orange-600" : "bg-neutral-200"
-                    )}
-                  >
-                    <div className={cn(
-                      "absolute top-1 w-4 h-4 bg-white rounded-full transition-all",
-                      franchise.influencerPromotion ? "left-5" : "left-1"
-                    )} />
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <span className="hidden print:inline text-xs font-bold text-black">{franchise.influencerPromotion ? "是" : "否"}</span>
+                    <button 
+                      onClick={() => onUpdate({ influencerPromotion: !franchise.influencerPromotion })}
+                      className={cn(
+                        "w-10 h-6 rounded-full transition-all relative print:hidden",
+                        franchise.influencerPromotion ? "bg-orange-600" : "bg-neutral-200"
+                      )}
+                    >
+                      <div className={cn(
+                        "absolute top-1 w-4 h-4 bg-white rounded-full transition-all",
+                        franchise.influencerPromotion ? "left-5" : "left-1"
+                      )} />
+                    </button>
+                  </div>
                 </div>
                 <div className="flex items-center justify-between p-3 bg-neutral-50 rounded-2xl border border-neutral-100">
                   <span className="text-xs font-bold text-neutral-600">日常带店</span>
-                  <button 
-                    onClick={() => onUpdate({ dailyOperation: !franchise.dailyOperation })}
-                    className={cn(
-                      "w-10 h-6 rounded-full transition-all relative",
-                      franchise.dailyOperation ? "bg-orange-600" : "bg-neutral-200"
-                    )}
-                  >
-                    <div className={cn(
-                      "absolute top-1 w-4 h-4 bg-white rounded-full transition-all",
-                      franchise.dailyOperation ? "left-5" : "left-1"
-                    )} />
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <span className="hidden print:inline text-xs font-bold text-black">{franchise.dailyOperation ? "是" : "否"}</span>
+                    <button 
+                      onClick={() => onUpdate({ dailyOperation: !franchise.dailyOperation })}
+                      className={cn(
+                        "w-10 h-6 rounded-full transition-all relative print:hidden",
+                        franchise.dailyOperation ? "bg-orange-600" : "bg-neutral-200"
+                      )}
+                    >
+                      <div className={cn(
+                        "absolute top-1 w-4 h-4 bg-white rounded-full transition-all",
+                        franchise.dailyOperation ? "left-5" : "left-1"
+                      )} />
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>

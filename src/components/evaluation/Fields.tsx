@@ -35,8 +35,8 @@ export const SelectionField: React.FC<SelectionFieldProps> = ({
           className={cn(
             "flex-1 min-w-[60px] py-2 text-xs font-bold rounded-lg transition-all",
             value === opt.id 
-              ? "bg-white text-orange-600 shadow-sm" 
-              : "text-neutral-400 hover:text-neutral-600"
+              ? "bg-white text-orange-600 shadow-sm border-2 border-orange-600 print:border-2 print:border-black print:text-black" 
+              : "text-neutral-400 hover:text-neutral-600 print:text-neutral-300"
           )}
         >
           {opt.label}
@@ -74,8 +74,8 @@ export const ToggleField: React.FC<ToggleFieldProps> = ({
         className={cn(
           "flex-1 py-2 text-xs font-bold rounded-lg transition-all",
           value === true 
-            ? "bg-white text-orange-600 shadow-sm" 
-            : "text-neutral-400 hover:text-neutral-600"
+            ? "bg-white text-orange-600 shadow-sm border-2 border-orange-600 print:border-2 print:border-black print:text-black" 
+            : "text-neutral-400 hover:text-neutral-600 print:text-neutral-300"
         )}
       >
         是
@@ -85,8 +85,8 @@ export const ToggleField: React.FC<ToggleFieldProps> = ({
         className={cn(
           "flex-1 py-2 text-xs font-bold rounded-lg transition-all",
           value === false 
-            ? "bg-white text-orange-600 shadow-sm" 
-            : "text-neutral-400 hover:text-neutral-600"
+            ? "bg-white text-orange-600 shadow-sm border-2 border-orange-600 print:border-2 print:border-black print:text-black" 
+            : "text-neutral-400 hover:text-neutral-600 print:text-neutral-300"
         )}
       >
         否
