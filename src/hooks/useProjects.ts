@@ -162,6 +162,7 @@ export function useProjects() {
         grossMargin: 0,
         estimatedDailyRevenue: 0,
         averageTransactionValue: 0,
+        location: { country: 'china', province: '', city: '', address: '' },
         franchiseAnalysis: {
           enabled: false,
           motivation: '',
@@ -241,6 +242,7 @@ export function useProjects() {
         grossMargin: 0,
         estimatedDailyRevenue: 0,
         averageTransactionValue: 0,
+        location: { country: 'china', province: '', city: '', address: '' },
         franchiseAnalysis: {
           enabled: false,
           motivation: '',

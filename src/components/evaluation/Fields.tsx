@@ -51,6 +51,47 @@ export const SelectionField: React.FC<SelectionFieldProps> = ({
   </div>
 );
 
+interface DropdownFieldProps {
+  label: string;
+  value: string;
+  options: { id: string; label: string }[];
+  onChange: (v: string) => void;
+  tooltip?: string;
+  placeholder?: string;
+}
+
+export const DropdownField: React.FC<DropdownFieldProps> = ({
+  label,
+  value,
+  options,
+  onChange,
+  tooltip,
+  placeholder = "请选择..."
+}) => (
+  <div className="flex flex-col gap-1.5">
+    <div className="flex items-center gap-1">
+      <label className="text-xs font-medium text-neutral-500 uppercase tracking-wider">{label}</label>
+      {tooltip && (
+        <Tooltip text={tooltip}>
+          <Info size={14} className="text-neutral-400 cursor-help" />
+        </Tooltip>
+      )}
+    </div>
+    <select
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className="w-full px-4 py-3 bg-neutral-50 border border-neutral-100 rounded-xl text-sm font-bold focus:ring-2 focus:ring-orange-500 outline-none transition-all appearance-none cursor-pointer"
+    >
+      <option value="" disabled>{placeholder}</option>
+      {options.map((opt) => (
+        <option key={opt.id} value={opt.id}>
+          {opt.label}
+        </option>
+      ))}
+    </select>
+  </div>
+);
+
 interface ToggleFieldProps {
   label: string;
   value: boolean;

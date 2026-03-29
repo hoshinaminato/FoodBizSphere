@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { MapPin, Plus, Trash2, Edit2, Users, Maximize2, ChevronRight, ChevronLeft, Store, ChevronDown, ChevronUp, Download } from 'lucide-react';
-import { Project, BusinessDistrict, Merchant } from '../types';
+import React, { useState, useEffect } from 'react';
+import { MapPin, Plus, Trash2, Edit2, Users, Maximize2, ChevronRight, ChevronLeft, Store, ChevronDown, ChevronUp, Download, LayoutDashboard } from 'lucide-react';
+import { Project, BusinessDistrict, Merchant, Evaluation } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn, exportToCSV, triggerPrint } from '../lib/utils';
 import { MerchantCounter } from './MerchantCounter';
@@ -12,27 +12,40 @@ import { RenameModal } from './ui/RenameModal';
 
 interface DistrictManagerProps {
   project: Project;
+  initialDistrictId?: string | null;
   onUpdateDistrict: (id: string, updates: Partial<BusinessDistrict>) => void;
   onDeleteDistrict: (id: string) => void;
   onCreateDistrict: (name: string) => void;
   onUpdateMerchant: (id: string, updates: Partial<Merchant>) => void;
   onDeleteMerchant: (id: string) => void;
   onCreateMerchant: (name: string) => string;
+  onJumpToEvaluation: (id: string) => void;
 }
 
 export const DistrictManager: React.FC<DistrictManagerProps> = ({
   project,
+  initialDistrictId,
   onUpdateDistrict,
   onDeleteDistrict,
   onCreateDistrict,
   onUpdateMerchant,
   onDeleteMerchant,
-  onCreateMerchant
+  onCreateMerchant,
+  onJumpToEvaluation
 }) => {
   const districts = project.districts || [];
   const merchants = project.merchants || [];
+  const evaluations = project.evaluations || [];
   
   const [activeDistrictId, setActiveDistrictId] = useState<string | null>(districts[0]?.id || null);
+
+  useEffect(() => {
+    if (initialDistrictId) {
+      setActiveDistrictId(initialDistrictId);
+      setMobileView('detail');
+    }
+  }, [initialDistrictId]);
+
   const [isFocusModeOpen, setIsFocusModeOpen] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
   const [showMerchantDeleteConfirm, setShowMerchantDeleteConfirm] = useState<string | null>(null);
@@ -315,6 +328,46 @@ export const DistrictManager: React.FC<DistrictManagerProps> = ({
                       </motion.div>
                     )}
                   </AnimatePresence>
+                </div>
+
+                {/* Associated Evaluations */}
+                <div className="mb-12">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-1 h-6 bg-orange-600 rounded-full"></div>
+                    <h3 className="text-lg font-bold">关联评估方案</h3>
+                    <span className="text-xs text-neutral-400 font-medium ml-2">
+                      {evaluations.filter(e => e.districtId === activeDistrict.id).length} 个方案
+                    </span>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {evaluations
+                      .filter(e => e.districtId === activeDistrict.id)
+                      .map(e => (
+                        <div 
+                          key={e.id}
+                          onClick={() => onJumpToEvaluation(e.id)}
+                          className="p-4 bg-white border border-neutral-200 rounded-2xl shadow-sm hover:border-orange-200 transition-all group cursor-pointer active:scale-[0.98]"
+                        >
+                          <div className="flex items-center gap-3 mb-2">
+                            <div className="w-8 h-8 bg-orange-50 rounded-xl flex items-center justify-center text-orange-600">
+                              <LayoutDashboard size={16} />
+                            </div>
+                            <h4 className="font-bold text-neutral-900 truncate">{e.name}</h4>
+                          </div>
+                          <div className="flex items-center justify-between text-[10px] font-bold text-neutral-400 uppercase tracking-widest">
+                            <span>{new Date(e.createdAt).toLocaleDateString()}</span>
+                            <span className="text-orange-600 opacity-0 group-hover:opacity-100 transition-opacity">点击评估页查看</span>
+                          </div>
+                        </div>
+                      ))
+                    }
+                    {evaluations.filter(e => e.districtId === activeDistrict.id).length === 0 && (
+                      <div className="col-span-full py-8 text-center bg-neutral-100 rounded-2xl border border-dashed border-neutral-200">
+                        <p className="text-xs text-neutral-400 font-bold uppercase tracking-widest">暂无关联评估方案</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Merchants Grid */}

@@ -14,7 +14,10 @@ export interface MerchantRecord {
 }
 
 export interface LocationData {
-  address?: string;
+  country?: string;
+  province?: string;
+  city?: string;
+  address?: string; // This will be the "detail address"
   locationDescription?: string;
   coordinates?: { lat: number; lng: number };
   mapUrl?: string;

@@ -44,6 +44,7 @@ export default function App() {
 
   const [activeTab, setActiveTab] = useState<'evaluations' | 'districts'>('evaluations');
   const [currentView, setCurrentView] = useState<'projects' | 'liveCases'>('projects');
+  const [jumpToDistrictId, setJumpToDistrictId] = useState<string | null>(null);
 
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -217,6 +218,10 @@ export default function App() {
                       districts={activeProject?.districts || []}
                       onUpdate={(updates) => updateEvaluation(activeProjectId, activeEval.id, updates)}
                       onBack={() => setActiveEvalId(null)}
+                      onJumpToDistrict={(id) => {
+                        setActiveTab('districts');
+                        setJumpToDistrictId(id);
+                      }}
                     />
                   )}
                 </main>
@@ -226,12 +231,18 @@ export default function App() {
                 {activeProject && (
                   <DistrictManager 
                     project={activeProject}
+                    evaluations={activeProject.evaluations}
+                    initialDistrictId={jumpToDistrictId}
                     onUpdateDistrict={(id, updates) => updateDistrict(activeProject.id, id, updates)}
                     onDeleteDistrict={(id) => deleteDistrict(activeProject.id, id)}
                     onCreateDistrict={(name) => createDistrict(activeProject.id, name)}
                     onUpdateMerchant={(id, updates) => updateMerchant(activeProject.id, id, updates)}
                     onDeleteMerchant={(id) => deleteMerchant(activeProject.id, id)}
                     onCreateMerchant={(name) => createMerchant(activeProject.id, name)}
+                    onJumpToEvaluation={(id) => {
+                      setActiveTab('evaluations');
+                      setActiveEvalId(id);
+                    }}
                   />
                 )}
               </div>

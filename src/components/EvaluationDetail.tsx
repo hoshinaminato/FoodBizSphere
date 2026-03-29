@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import { ChevronLeft } from 'lucide-react';
 import { Evaluation, BusinessDistrict, FranchiseAnalysis } from '../types';
 import { EvaluationHeader } from './evaluation/EvaluationHeader';
-import { DistrictSelector } from './evaluation/DistrictSelector';
 import { MetricsGrid } from './evaluation/MetricsGrid';
 import { CostAnalysisSection } from './evaluation/CostAnalysisSection';
 import { OperatingAnalysisSection } from './evaluation/OperatingAnalysisSection';
 import { FranchiseAnalysisSection } from './evaluation/FranchiseAnalysisSection';
+import { LocationSection } from './evaluation/LocationSection';
 import { PhotoSection } from './evaluation/PhotoSection';
 
 const DEFAULT_FRANCHISE_ANALYSIS: FranchiseAnalysis = {
@@ -43,13 +43,15 @@ interface EvaluationDetailProps {
   districts: BusinessDistrict[];
   onUpdate: (updates: Partial<Evaluation>) => void;
   onBack: () => void;
+  onJumpToDistrict: (id: string) => void;
 }
 
 export const EvaluationDetail: React.FC<EvaluationDetailProps> = ({ 
   activeEval, 
   districts,
   onUpdate, 
-  onBack 
+  onBack,
+  onJumpToDistrict
 }) => {
   const [isPhotosExpanded, setIsPhotosExpanded] = useState(false);
   const [isSetupCostHidden, setIsSetupCostHidden] = useState(false);
@@ -86,7 +88,6 @@ export const EvaluationDetail: React.FC<EvaluationDetailProps> = ({
   const monthlyNetProfit = (dailyGrossProfit - dailyFixedCost) * 30;
   const paybackPeriod = (setupCost > 0 && monthlyNetProfit > 0) ? (setupCost / monthlyNetProfit).toFixed(1) : "无法回本";
 
-  const selectedDistrict = districts.find(d => d.id === activeEval.districtId);
   const franchise = activeEval.franchiseAnalysis || DEFAULT_FRANCHISE_ANALYSIS;
 
   const updateFranchise = (updates: Partial<FranchiseAnalysis>) => {
@@ -110,18 +111,18 @@ export const EvaluationDetail: React.FC<EvaluationDetailProps> = ({
       {/* Title Section */}
       <EvaluationHeader 
         activeEval={activeEval}
-        districtName={selectedDistrict?.name}
+        districts={districts}
         onUpdate={onUpdate}
         onBack={onBack}
         onPrint={handlePrint}
+        onJumpToDistrict={onJumpToDistrict}
         isIframe={isIframe}
       />
 
-      {/* District Selector */}
-      <DistrictSelector 
-        districts={districts}
-        selectedId={activeEval.districtId}
-        onSelect={(id) => onUpdate({ districtId: id })}
+      {/* Location Section */}
+      <LocationSection 
+        evaluation={activeEval}
+        onUpdate={onUpdate}
       />
 
       {/* Metrics Grid */}
