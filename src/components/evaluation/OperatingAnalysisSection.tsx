@@ -8,6 +8,7 @@ interface OperatingAnalysisSectionProps {
   dailyFixedCost: number;
   dailyBreakeven: number;
   dailyGrossProfit: number;
+  dailyNetProfit: number;
   monthlyGrossProfit: number;
   monthlyNetProfit: number;
   paybackPeriod: string;
@@ -19,6 +20,7 @@ export const OperatingAnalysisSection: React.FC<OperatingAnalysisSectionProps> =
   dailyFixedCost,
   dailyBreakeven,
   dailyGrossProfit,
+  dailyNetProfit,
   monthlyGrossProfit,
   monthlyNetProfit,
   paybackPeriod
@@ -43,11 +45,32 @@ export const OperatingAnalysisSection: React.FC<OperatingAnalysisSectionProps> =
           suffix="¥"
         />
         <InputField 
-          label="毛利率" 
-          value={evaluation.grossMargin * 100} 
-          onChange={(v) => onUpdate({ grossMargin: v / 100 })}
+          label="堂食毛利率" 
+          value={evaluation.dineInGrossMargin * 100} 
+          onChange={(v) => onUpdate({ dineInGrossMargin: v / 100 })}
           suffix="%"
-          tooltip="毛利率 = (销售额 - 原材料成本) / 销售额。餐饮行业通常在 60% 左右。"
+          tooltip="堂食毛利率 = (堂食销售额 - 原材料成本) / 堂食销售额。"
+        />
+        <InputField 
+          label="外卖毛利率" 
+          value={evaluation.takeoutGrossMargin * 100} 
+          onChange={(v) => onUpdate({ takeoutGrossMargin: v / 100 })}
+          suffix="%"
+          tooltip="外卖毛利率 = (外卖销售额 - 原材料成本 - 平台抽成) / 外卖销售额。"
+        />
+        <InputField 
+          label="堂食预估每日营业额" 
+          value={evaluation.dineInEstimatedDailyRevenue} 
+          onChange={(v) => onUpdate({ dineInEstimatedDailyRevenue: v })}
+          suffix="¥"
+          tooltip="您预期的堂食每日平均营业额。"
+        />
+        <InputField 
+          label="外卖预估每日营业额" 
+          value={evaluation.takeoutEstimatedDailyRevenue} 
+          onChange={(v) => onUpdate({ takeoutEstimatedDailyRevenue: v })}
+          suffix="¥"
+          tooltip="您预期的外卖每日平均营业额。"
         />
         <InputField 
           label="每日固定成本" 
@@ -63,21 +86,7 @@ export const OperatingAnalysisSection: React.FC<OperatingAnalysisSectionProps> =
           readOnly
           type="text"
           suffix="¥"
-          tooltip="计算公式：每日固定成本 / 毛利率。这是每天必须卖到的营业额。"
-        />
-        <InputField 
-          label="预估每日营业额" 
-          value={evaluation.estimatedDailyRevenue} 
-          onChange={(v) => onUpdate({ estimatedDailyRevenue: v })}
-          suffix="¥"
-          tooltip="您预期的每日平均营业额。"
-        />
-        <InputField 
-          label="客单价" 
-          value={evaluation.averageTransactionValue} 
-          onChange={(v) => onUpdate({ averageTransactionValue: v })}
-          suffix="¥"
-          tooltip="单纯输入，不参与运算。"
+          tooltip="计算公式：每日固定成本 / 加权平均毛利率。这是每天必须卖到的营业额。"
         />
         <InputField 
           label="每日毛利" 
@@ -85,7 +94,15 @@ export const OperatingAnalysisSection: React.FC<OperatingAnalysisSectionProps> =
           readOnly
           type="text"
           suffix="¥"
-          tooltip="计算公式：预估每日营业额 * 毛利率"
+          tooltip="计算公式：(堂食营业额 * 堂食毛利) + (外卖营业额 * 外卖毛利)"
+        />
+        <InputField 
+          label="每日纯利" 
+          value={dailyNetProfit.toFixed(2)} 
+          readOnly
+          type="text"
+          suffix="¥"
+          tooltip="计算公式：每日毛利 - 每日固定成本"
         />
         <InputField 
           label="每月毛利" 
@@ -101,7 +118,7 @@ export const OperatingAnalysisSection: React.FC<OperatingAnalysisSectionProps> =
           readOnly
           type="text"
           suffix="¥"
-          tooltip="计算公式：(每日毛利 - 每日固定成本) * 30"
+          tooltip="计算公式：每日纯利 * 30"
         />
         <InputField 
           label="回本周期 (月)" 
@@ -110,6 +127,13 @@ export const OperatingAnalysisSection: React.FC<OperatingAnalysisSectionProps> =
           type="text"
           suffix="月"
           tooltip="计算公式：建店总成本 / 每月纯利。"
+        />
+        <InputField 
+          label="客单价" 
+          value={evaluation.averageTransactionValue} 
+          onChange={(v) => onUpdate({ averageTransactionValue: v })}
+          suffix="¥"
+          tooltip="单纯输入，不参与运算。"
         />
       </div>
     </div>

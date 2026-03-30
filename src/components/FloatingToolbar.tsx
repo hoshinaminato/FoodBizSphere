@@ -24,8 +24,9 @@ export const FloatingToolbar: React.FC = () => {
           // Use a small timeout to ensure the click/tap event has passed
           setTimeout(() => { isDraggingRef.current = false; }, 100);
         }}
-        initial={{ x: 20, y: 100 }}
-        className="absolute pointer-events-auto flex flex-col items-center gap-3"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="absolute bottom-10 left-10 pointer-events-auto flex flex-col items-center gap-3"
       >
         <AnimatePresence mode="popLayout">
           {!activeTool ? (

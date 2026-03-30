@@ -97,6 +97,11 @@ export interface Evaluation {
   createdAt: number;
   districtId?: string; // 关联商圈
   location?: LocationData;
+  memo?: {
+    content: string;
+    images: string[];
+  };
+  photos?: string[];
   
   // Basic Info
   area: number;
@@ -114,9 +119,15 @@ export interface Evaluation {
   // Operating Costs
   monthlyLabor: number;
   monthlyUtilities: number;
-  grossMargin: number; // percentage (0-1)
-  estimatedDailyRevenue: number;
+  dineInGrossMargin: number; // percentage (0-1)
+  takeoutGrossMargin: number; // percentage (0-1)
+  dineInEstimatedDailyRevenue: number;
+  takeoutEstimatedDailyRevenue: number;
   averageTransactionValue: number;
+  
+  // Deprecated fields (kept for migration)
+  grossMargin?: number;
+  estimatedDailyRevenue?: number;
   
   // Franchise Analysis
   franchiseAnalysis?: FranchiseAnalysis;

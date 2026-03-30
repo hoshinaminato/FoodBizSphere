@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronLeft, Pencil, MapPin, Printer, Save, ExternalLink } from 'lucide-react';
+import { ChevronLeft, Pencil, MapPin, Printer, Save, ExternalLink, StickyNote } from 'lucide-react';
 import { formatDate, cn } from '../../lib/utils';
 import { Evaluation, BusinessDistrict } from '../../types';
 
@@ -10,6 +10,7 @@ interface EvaluationHeaderProps {
   onBack: () => void;
   onPrint: () => void;
   onJumpToDistrict: (id: string) => void;
+  onToggleMemo: () => void;
   isIframe: boolean;
 }
 
@@ -20,24 +21,47 @@ export const EvaluationHeader: React.FC<EvaluationHeaderProps> = ({
   onBack,
   onPrint,
   onJumpToDistrict,
+  onToggleMemo,
   isIframe
 }) => {
   const selectedDistrictId = activeEval.districtId;
+
+  const handleMemoClick = () => {
+    onToggleMemo();
+    setTimeout(() => {
+      const element = document.getElementById('memo-section');
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 100);
+  };
 
   return (
     <section className="flex flex-col md:flex-row md:items-end justify-between gap-4">
       <div className="flex-1 group relative min-w-0">
         <div className="flex items-center gap-2 md:gap-3 mb-1 min-w-0">
           <input 
-            className="text-2xl md:text-3xl font-black bg-transparent border-none outline-none focus:ring-2 focus:ring-orange-500 rounded-xl px-2 -ml-2 w-full transition-all truncate"
+            className="text-2xl md:text-3xl font-black bg-transparent border-none outline-none focus:ring-2 focus:ring-orange-500 rounded-xl px-2 -ml-2 w-full transition-all truncate print:hidden"
             value={activeEval.name ?? ""}
             onChange={(e) => onUpdate({ name: e.target.value })}
             placeholder="输入评估名称..."
           />
-          <Pencil size={18} className="text-neutral-300 group-hover:text-orange-600 transition-colors flex-shrink-0 md:w-5 md:h-5" />
+          <h1 className="hidden print:block text-2xl font-black text-neutral-900 mb-2">
+            {activeEval.name}
+          </h1>
+          <Pencil size={18} className="text-neutral-300 group-hover:text-orange-600 transition-colors flex-shrink-0 md:w-5 md:h-5 no-print" />
         </div>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-          <p className="text-[10px] md:text-sm text-neutral-400 font-medium whitespace-nowrap">评估创建于 {formatDate(activeEval.createdAt)}</p>
+          <div className="flex items-center gap-2">
+            <p className="text-[10px] md:text-sm text-neutral-400 font-medium whitespace-nowrap">评估创建于 {formatDate(activeEval.createdAt)}</p>
+            <button 
+              onClick={handleMemoClick}
+              className="flex items-center gap-1 text-[10px] md:text-xs font-bold text-blue-600 hover:text-blue-700 transition-colors uppercase tracking-widest no-print"
+            >
+              <StickyNote size={12} />
+              备忘录
+            </button>
+          </div>
           
           <div className="flex items-center gap-1.5 bg-neutral-50 px-2 py-1 rounded-lg border border-neutral-100 no-print">
             <MapPin size={12} className="text-orange-600" />

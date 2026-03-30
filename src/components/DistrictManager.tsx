@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MapPin, Plus, Trash2, Edit2, Users, Maximize2, ChevronRight, ChevronLeft, Store, ChevronDown, ChevronUp, Download, LayoutDashboard } from 'lucide-react';
+import { MapPin, Plus, Trash2, Edit2, Users, Maximize2, ChevronRight, ChevronLeft, Store, ChevronDown, ChevronUp, Download, LayoutDashboard, Pencil } from 'lucide-react';
 import { Project, BusinessDistrict, Merchant, Evaluation } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn, exportToCSV, triggerPrint } from '../lib/utils';
@@ -9,6 +9,15 @@ import { ImageUploader } from './ImageUploader';
 import { ConsumerGroupManager } from './ConsumerGroupManager';
 import { ConfirmModal } from './ui/ConfirmModal';
 import { RenameModal } from './ui/RenameModal';
+import { FloatingAnchorNav } from './ui/FloatingAnchorNav';
+
+const DISTRICT_ANCHORS = [
+  { id: 'district-header', label: '商圈概览' },
+  { id: 'district-photos', label: '实地照片' },
+  { id: 'consumer-groups', label: '消费客群' },
+  { id: 'associated-evaluations', label: '关联评估' },
+  { id: 'merchants-list', label: '商家列表' },
+];
 
 interface DistrictManagerProps {
   project: Project;
@@ -209,8 +218,10 @@ export const DistrictManager: React.FC<DistrictManagerProps> = ({
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                className="max-w-6xl mx-auto"
+                className="max-w-6xl mx-auto relative"
               >
+                <FloatingAnchorNav anchors={DISTRICT_ANCHORS} />
+
                 {/* Mobile Back Button */}
                 <button 
                   onClick={() => setMobileView('list')}
@@ -220,9 +231,17 @@ export const DistrictManager: React.FC<DistrictManagerProps> = ({
                 </button>
 
                 {/* District Header */}
-                <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6 mb-12">
-                  <div>
-                    <h2 className="text-3xl md:text-4xl font-black text-neutral-900 mb-2">{activeDistrict.name}</h2>
+                <div id="district-header" className="flex flex-col xl:flex-row xl:items-center justify-between gap-6 mb-12 scroll-mt-20">
+                  <div className="group relative min-w-0 flex-1">
+                    <div className="flex items-center gap-2 md:gap-3 mb-1 min-w-0">
+                      <input 
+                        className="text-3xl md:text-4xl font-black bg-transparent border-none outline-none focus:ring-2 focus:ring-orange-500 rounded-xl px-2 -ml-2 w-full transition-all truncate"
+                        value={activeDistrict.name}
+                        onChange={(e) => onUpdateDistrict(activeDistrict.id, { name: e.target.value })}
+                        placeholder="输入商圈名称..."
+                      />
+                      <Pencil size={20} className="text-neutral-300 group-hover:text-orange-600 transition-colors flex-shrink-0" />
+                    </div>
                     <div className="flex items-center gap-4">
                       <span className="flex items-center gap-1.5 text-xs font-bold text-neutral-400 uppercase tracking-widest">
                         <Users size={14} /> {activeDistrict.merchantIds?.length || 0} 个商家数据
@@ -252,7 +271,7 @@ export const DistrictManager: React.FC<DistrictManagerProps> = ({
                 </div>
 
                 {/* District Images */}
-                <div className="mb-12">
+                <div id="district-photos" className="mb-12 scroll-mt-20">
                   <div 
                     className="flex items-center justify-between cursor-pointer group mb-4"
                     onClick={() => setIsPhotosExpanded(!isPhotosExpanded)}
@@ -293,7 +312,7 @@ export const DistrictManager: React.FC<DistrictManagerProps> = ({
                 </div>
 
                 {/* Consumer Groups Analysis */}
-                <div className="mb-12">
+                <div id="consumer-groups" className="mb-12 scroll-mt-20">
                   <div 
                     className="flex items-center justify-between cursor-pointer group mb-4"
                     onClick={() => setIsConsumerGroupsExpanded(!isConsumerGroupsExpanded)}
@@ -331,7 +350,7 @@ export const DistrictManager: React.FC<DistrictManagerProps> = ({
                 </div>
 
                 {/* Associated Evaluations */}
-                <div className="mb-12">
+                <div id="associated-evaluations" className="mb-12 scroll-mt-20">
                   <div className="flex items-center gap-2 mb-4">
                     <div className="w-1 h-6 bg-orange-600 rounded-full"></div>
                     <h3 className="text-lg font-bold">关联评估方案</h3>
@@ -371,7 +390,7 @@ export const DistrictManager: React.FC<DistrictManagerProps> = ({
                 </div>
 
                 {/* Merchants Grid */}
-                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                <div id="merchants-list" className="grid grid-cols-1 xl:grid-cols-2 gap-6 scroll-mt-20">
                   {districtMerchants.map(merchant => (
                     <div key={merchant.id} className="relative group">
                       <MerchantCounter 

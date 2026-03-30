@@ -118,7 +118,6 @@ export default function App() {
             project={activeProject!}
             onBack={() => { setActiveProjectId(null); setActiveEvalId(null); }}
             onUpdateName={(name) => updateProjectName(activeProjectId, name)}
-            onCreateEvaluation={() => createEvaluation(activeProjectId)}
           />
 
           {/* Tab Navigation */}
@@ -147,8 +146,18 @@ export default function App() {
             {activeTab === 'evaluations' ? (
               <>
                 {/* Evaluation List (Left Sidebar) - Hidden on mobile */}
-                <aside className="w-56 lg:w-64 xl:w-80 border-r border-neutral-200 bg-white overflow-y-auto hidden md:block">
-                  <div className="p-4 space-y-3">
+                <aside className="w-56 lg:w-64 xl:w-80 border-r border-neutral-200 bg-white flex flex-col hidden md:flex">
+                  <div className="p-4 border-b border-neutral-100 flex items-center justify-between">
+                    <h3 className="text-[10px] font-black text-neutral-400 uppercase tracking-widest">评估方案</h3>
+                    <button 
+                      onClick={() => createEvaluation(activeProjectId)}
+                      className="p-1.5 bg-neutral-900 text-white rounded-lg hover:bg-neutral-800 transition-colors"
+                      title="新增评估"
+                    >
+                      <Plus size={16} />
+                    </button>
+                  </div>
+                  <div className="flex-1 overflow-y-auto p-4 space-y-3">
                     {activeProject?.evaluations.map(e => (
                       <EvaluationItem 
                         key={e.id}
@@ -157,6 +166,7 @@ export default function App() {
                         onClick={() => setActiveEvalId(e.id)}
                         onDuplicate={(item) => duplicateEvaluation(activeProjectId, item)}
                         onDelete={(id) => deleteEvaluation(activeProjectId, id)}
+                        onRename={(id, newName) => updateEvaluation(activeProjectId, id, { name: newName })}
                       />
                     ))}
                     {activeProject?.evaluations.length === 0 && (
@@ -169,11 +179,20 @@ export default function App() {
 
                 {/* Main Content (Evaluation Detail or Mobile List) */}
                 <main className="flex-1 overflow-y-auto bg-neutral-50 p-4 lg:p-8">
-                  {!activeEvalId ? (
+                  {!activeEval ? (
                     <div className="h-full">
                       {/* Mobile List View */}
                       <div className="md:hidden space-y-3">
-                        <h3 className="text-sm font-black text-neutral-400 uppercase tracking-widest mb-4 px-2">评估方案列表</h3>
+                        <div className="flex items-center justify-between mb-4 px-2">
+                          <h3 className="text-sm font-black text-neutral-400 uppercase tracking-widest">评估方案列表</h3>
+                          <button 
+                            onClick={() => createEvaluation(activeProjectId)}
+                            className="p-1.5 bg-neutral-900 text-white rounded-lg hover:bg-neutral-800 transition-colors"
+                            title="新增评估"
+                          >
+                            <Plus size={16} />
+                          </button>
+                        </div>
                         {activeProject?.evaluations.map(e => (
                           <EvaluationItem 
                             key={e.id}
@@ -182,6 +201,7 @@ export default function App() {
                             onClick={() => setActiveEvalId(e.id)}
                             onDuplicate={(item) => duplicateEvaluation(activeProjectId, item)}
                             onDelete={(id) => deleteEvaluation(activeProjectId, id)}
+                            onRename={(id, newName) => updateEvaluation(activeProjectId, id, { name: newName })}
                           />
                         ))}
                         {activeProject?.evaluations.length === 0 && (
@@ -216,7 +236,7 @@ export default function App() {
                     <EvaluationDetail 
                       activeEval={activeEval}
                       districts={activeProject?.districts || []}
-                      onUpdate={(updates) => updateEvaluation(activeProjectId, activeEval.id, updates)}
+                      onUpdate={(updates) => activeEval && updateEvaluation(activeProjectId, activeEval.id, updates)}
                       onBack={() => setActiveEvalId(null)}
                       onJumpToDistrict={(id) => {
                         setActiveTab('districts');

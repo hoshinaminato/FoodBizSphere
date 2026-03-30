@@ -7,14 +7,12 @@ interface ProjectHeaderProps {
   project: Project;
   onBack: () => void;
   onUpdateName: (name: string) => void;
-  onCreateEvaluation: () => void;
 }
 
 export const ProjectHeader: React.FC<ProjectHeaderProps> = ({ 
   project, 
   onBack, 
-  onUpdateName, 
-  onCreateEvaluation 
+  onUpdateName 
 }) => {
   const [isEditing, setIsEditing] = useState(false);
 
@@ -50,16 +48,6 @@ export const ProjectHeader: React.FC<ProjectHeaderProps> = ({
           )}
           <p className="text-[8px] md:text-[10px] text-neutral-400 font-bold uppercase tracking-widest truncate">空间管理模式</p>
         </div>
-      </div>
-      <div className="flex items-center gap-2 md:gap-3 shrink-0 ml-2 no-print">
-        <button 
-          onClick={onCreateEvaluation}
-          className="bg-neutral-900 text-white px-3 md:px-4 py-2 rounded-xl text-xs md:text-sm font-bold flex items-center gap-1 md:gap-2 hover:bg-neutral-800 transition-colors whitespace-nowrap"
-        >
-          <Plus size={16} className="md:w-[18px] md:h-[18px]" /> 
-          <span className="hidden sm:inline">新增评估</span>
-          <span className="sm:hidden">新增</span>
-        </button>
       </div>
     </header>
   );

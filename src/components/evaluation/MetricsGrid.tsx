@@ -5,12 +5,14 @@ interface MetricsGridProps {
   setupCost: number;
   dailyFixedCost: number;
   dailyBreakeven: number;
+  dailyNetProfit: number;
 }
 
 export const MetricsGrid: React.FC<MetricsGridProps> = ({
   setupCost,
   dailyFixedCost,
-  dailyBreakeven
+  dailyBreakeven,
+  dailyNetProfit
 }) => {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -31,6 +33,11 @@ export const MetricsGrid: React.FC<MetricsGridProps> = ({
         <p className="text-neutral-400 text-xs font-bold uppercase tracking-widest mb-2">日盈亏平衡点</p>
         <h3 className="text-3xl font-black text-orange-600">{formatCurrency(dailyBreakeven)}</h3>
         <p className="text-[10px] text-neutral-400 mt-2">每日营业额达到此金额即不亏损</p>
+      </div>
+      <div className="bg-white p-6 rounded-3xl border border-neutral-200 shadow-sm">
+        <p className="text-neutral-400 text-xs font-bold uppercase tracking-widest mb-2">每日纯利</p>
+        <h3 className="text-3xl font-black text-green-600">{formatCurrency(dailyNetProfit)}</h3>
+        <p className="text-[10px] text-neutral-400 mt-2">扣除所有成本后的每日净利润</p>
       </div>
     </div>
   );

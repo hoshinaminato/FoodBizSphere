@@ -1,6 +1,7 @@
 import React from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { ImageUploader } from '../ImageUploader';
+import { ImageDisplay } from '../ImageDisplay';
 import { cn } from '../../lib/utils';
 
 interface PhotoSectionProps {
@@ -39,13 +40,13 @@ export const PhotoSection: React.FC<PhotoSectionProps> = ({
         </div>
         <div className="grid grid-cols-2 gap-4">
           {photos.map((photo, i) => (
-            <img 
-              key={i} 
-              src={photo} 
-              alt={`实地照片 ${i + 1}`} 
-              className="w-full aspect-video object-cover rounded-xl border border-neutral-200"
-              referrerPolicy="no-referrer"
-            />
+            <div key={i} className="w-full aspect-video rounded-xl overflow-hidden border border-neutral-200">
+              <ImageDisplay 
+                imageKey={photo} 
+                alt={`实地照片 ${i + 1}`} 
+                className="w-full h-full object-cover"
+              />
+            </div>
           ))}
           {photos.length === 0 && (
             <p className="text-sm text-neutral-400 italic">暂无照片</p>
