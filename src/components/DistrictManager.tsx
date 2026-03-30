@@ -390,8 +390,25 @@ export const DistrictManager: React.FC<DistrictManagerProps> = ({
                 </div>
 
                 {/* Merchants Grid */}
-                <div id="merchants-list" className="grid grid-cols-1 xl:grid-cols-2 gap-6 scroll-mt-20">
-                  {districtMerchants.map(merchant => (
+                <div id="merchants-list" className="scroll-mt-20">
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-2">
+                      <div className="w-1 h-6 bg-orange-600 rounded-full"></div>
+                      <h3 className="text-lg font-bold">商家数据列表</h3>
+                      <span className="text-xs text-neutral-400 font-medium ml-2">
+                        {districtMerchants.length} 个商家
+                      </span>
+                    </div>
+                    <button 
+                      onClick={handleAddMerchant}
+                      className="flex items-center gap-2 px-4 py-2 bg-neutral-900 text-white rounded-xl font-bold text-sm hover:bg-neutral-800 transition-all active:scale-95 shadow-sm"
+                    >
+                      <Plus size={16} /> 新增商家
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                    {districtMerchants.map(merchant => (
                     <div key={merchant.id} className="relative group">
                       <MerchantCounter 
                         merchant={merchant} 
@@ -417,6 +434,18 @@ export const DistrictManager: React.FC<DistrictManagerProps> = ({
                       </div>
                     </div>
                   ))}
+
+                  {/* Add New Merchant Card */}
+                  <button 
+                    onClick={handleAddMerchant}
+                    className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-neutral-200 rounded-3xl text-neutral-400 hover:border-orange-300 hover:text-orange-600 hover:bg-orange-50 transition-all group min-h-[200px]"
+                  >
+                    <div className="w-12 h-12 bg-neutral-100 rounded-full flex items-center justify-center mb-3 group-hover:bg-orange-100 transition-colors">
+                      <Plus size={24} />
+                    </div>
+                    <span className="font-bold text-sm">新增商家数据</span>
+                    <span className="text-[10px] uppercase tracking-widest mt-1 opacity-60">点击开始录入</span>
+                  </button>
                   
                   {/* Add Existing Merchant Suggestion */}
                   {merchants.length > districtMerchants.length && (
@@ -449,7 +478,8 @@ export const DistrictManager: React.FC<DistrictManagerProps> = ({
                     </div>
                   )}
                 </div>
-              </motion.div>
+              </div>
+            </motion.div>
             ) : (
               <div className="h-full flex flex-col items-center justify-center text-neutral-300">
                 <MapPin size={64} className="opacity-10 mb-4" />

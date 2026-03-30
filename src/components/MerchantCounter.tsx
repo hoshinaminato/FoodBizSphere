@@ -34,6 +34,7 @@ export const MerchantCounter: React.FC<MerchantCounterProps> = ({
 }) => {
   const [activeRecordId, setActiveRecordId] = useState<string | null>(null);
   const [isPhotosExpanded, setIsPhotosExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(true);
   
   const isSuspicious = merchant.isBrushing || merchant.isFakeCustomers || merchant.isModifiedPOS;
 
@@ -189,41 +190,47 @@ export const MerchantCounter: React.FC<MerchantCounterProps> = ({
           {isExcluded ? "已排除" : "排除记录"}
         </button>
       )}
-      {/* Focus Mode Header - Hidden timer here as it's moved to overlay */}
-      {isFocusMode && (
-        <div className="mb-4 flex flex-col items-center text-center">
-          <div className="text-neutral-400 font-bold text-sm">
-            {tempData ? '正在计时记录' : (activeRecord ? `正在记录 · ${activeRecord.timePeriod}` : '实时观察')}
-          </div>
-        </div>
-      )}
 
-      <div className="flex justify-between items-start mb-6">
-        <div className="flex-1 group relative">
-          <div className="flex items-center gap-2">
-            <input 
-              className={cn(
-                "font-black text-neutral-900 bg-transparent border-none outline-none focus:ring-2 focus:ring-orange-500 rounded-lg px-1 -ml-1 w-full transition-all",
-                isFocusMode ? "text-xl md:text-3xl text-center" : "text-lg"
+      <div className={cn("flex justify-between items-start", isExpanded ? "mb-6" : "mb-0")}>
+        <div className="flex items-center gap-3 flex-1">
+          <button 
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="p-1.5 hover:bg-neutral-100 rounded-xl text-neutral-400 hover:text-orange-600 transition-all active:scale-90"
+            title={isExpanded ? "收起" : "展开"}
+          >
+            {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+          </button>
+          <div className="flex-1 group relative">
+            <div className="flex items-center gap-2">
+              <input 
+                className={cn(
+                  "font-black text-neutral-900 bg-transparent border-none outline-none focus:ring-2 focus:ring-orange-500 rounded-lg px-1 -ml-1 w-full transition-all",
+                  isFocusMode ? "text-xl md:text-3xl text-center" : "text-lg"
+                )}
+                value={merchant.name}
+                onChange={(e) => onUpdate({ name: e.target.value })}
+              />
+              {!isFocusMode && <Pencil size={14} className="text-neutral-300 group-hover:text-orange-600 transition-colors flex-shrink-0" />}
+            </div>
+            <div className={cn("flex items-center gap-2 mt-1", isFocusMode && "justify-center")}>
+              {isSuspicious ? (
+                <span className="flex items-center gap-1 text-[10px] font-bold text-orange-600 uppercase tracking-widest">
+                  <AlertTriangle size={12} /> 疑似非真实数据
+                </span>
+              ) : (
+                <span className="flex items-center gap-1 text-[10px] font-bold text-green-600 uppercase tracking-widest">
+                  <CheckCircle2 size={12} /> 真实度高
+                </span>
               )}
-              value={merchant.name}
-              onChange={(e) => onUpdate({ name: e.target.value })}
-            />
-            {!isFocusMode && <Pencil size={14} className="text-neutral-300 group-hover:text-orange-600 transition-colors flex-shrink-0" />}
-          </div>
-          <div className={cn("flex items-center gap-2 mt-1", isFocusMode && "justify-center")}>
-            {isSuspicious ? (
-              <span className="flex items-center gap-1 text-[10px] font-bold text-orange-600 uppercase tracking-widest">
-                <AlertTriangle size={12} /> 疑似非真实数据
-              </span>
-            ) : (
-              <span className="flex items-center gap-1 text-[10px] font-bold text-green-600 uppercase tracking-widest">
-                <CheckCircle2 size={12} /> 真实度高
-              </span>
-            )}
+              {!isExpanded && (
+                <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest ml-2 border-l border-neutral-200 pl-2">
+                  {records.length} 条记录 · ¥{formatCurrency(dailyRevenue)}/日
+                </span>
+              )}
+            </div>
           </div>
         </div>
-        {!isFocusMode && (
+        {!isFocusMode && isExpanded && (
           <button 
             onClick={() => handleAddRecord()}
             className="flex items-center gap-1 px-3 py-1.5 bg-neutral-100 hover:bg-neutral-200 text-neutral-600 rounded-xl text-[10px] font-bold transition-all"
@@ -233,8 +240,26 @@ export const MerchantCounter: React.FC<MerchantCounterProps> = ({
         )}
       </div>
 
-      {/* Records Table (Only if records exist) */}
-      {!isFocusMode && records.length > 0 && (
+      <AnimatePresence initial={false}>
+        {isExpanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: 'easeInOut' }}
+            className="overflow-hidden"
+          >
+            {/* Focus Mode Header - Hidden timer here as it's moved to overlay */}
+            {isFocusMode && (
+              <div className="mb-4 flex flex-col items-center text-center">
+                <div className="text-neutral-400 font-bold text-sm">
+                  {tempData ? '正在计时记录' : (activeRecord ? `正在记录 · ${activeRecord.timePeriod}` : '实时观察')}
+                </div>
+              </div>
+            )}
+
+            {/* Records Table (Only if records exist) */}
+            {!isFocusMode && records.length > 0 && (
         <div className="mb-6 overflow-x-auto rounded-2xl border border-neutral-100 no-scrollbar">
           <table className="w-full text-left border-collapse min-w-[500px]">
             <thead>
@@ -613,6 +638,9 @@ export const MerchantCounter: React.FC<MerchantCounterProps> = ({
           </button>
         </div>
       )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
