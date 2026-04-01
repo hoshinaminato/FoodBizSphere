@@ -91,6 +91,37 @@ export const CostAnalysisSection: React.FC<CostAnalysisSectionProps> = ({
           suffix="¥"
           tooltip="此项不仅计入首付成本，也会自动均摊到每日固定成本中。"
         />
+        <div className="flex flex-col gap-1.5">
+          <div className="flex items-center gap-1">
+            <label className="text-xs font-medium text-neutral-500 uppercase tracking-wider">淡季/放假月数</label>
+            <Tooltip text="如学校周边寒暑假不营业，选择放假月数以计算实际摊销房租">
+              <Info size={14} className="text-neutral-400 cursor-help" />
+            </Tooltip>
+          </div>
+          <div className="relative">
+            <select
+              value={evaluation.offMonths || 0}
+              onChange={(e) => onUpdate({ offMonths: parseInt(e.target.value) })}
+              className="w-full px-4 py-3 bg-white border border-neutral-200 rounded-xl text-neutral-900 focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all outline-none appearance-none"
+            >
+              {[0, 1, 2, 3, 4, 5, 6].map(m => (
+                <option key={m} value={m}>{m} 个月</option>
+              ))}
+            </select>
+            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-neutral-400">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+            </div>
+          </div>
+          {evaluation.offMonths && evaluation.offMonths > 0 ? (
+            <div className="mt-1 px-3 py-2 bg-orange-50 border border-orange-100 rounded-lg">
+              <p className="text-[10px] font-bold text-orange-600 uppercase tracking-wider mb-0.5">实际月房租 (摊销后)</p>
+              <p className="text-sm font-black text-orange-700">
+                ¥ {Math.round((evaluation.rent * 12) / (12 - evaluation.offMonths)).toLocaleString()}
+              </p>
+              <p className="text-[9px] text-orange-500 mt-0.5">计算公式: (房租 × 12) ÷ (12 - {evaluation.offMonths})</p>
+            </div>
+          ) : null}
+        </div>
         {!isHidden && (
           <>
             <InputField 

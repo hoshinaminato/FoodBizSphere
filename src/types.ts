@@ -108,6 +108,7 @@ export interface Evaluation {
   outdoorArea: number;
   fumeType: 'none' | 'light' | 'heavy';
   rent: number;
+  offMonths?: number; // Number of months with no business (e.g. school vacations)
   paymentMethod: number; // months
   deposit: number;
   transferFee: number;

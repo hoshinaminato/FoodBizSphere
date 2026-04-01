@@ -78,7 +78,7 @@ export const OperatingAnalysisSection: React.FC<OperatingAnalysisSectionProps> =
           readOnly
           type="text"
           suffix="¥"
-          tooltip="计算公式：(每月人工 + 水电杂费 + 房租) / 30"
+          tooltip="计算公式：(每月人工 + 水电杂费 + 实际月房租) / 30。实际月房租会根据淡季/放假月数进行摊销。"
         />
         <InputField 
           label="日盈亏平衡点" 

@@ -99,10 +99,14 @@ export const EvaluationDetail: React.FC<EvaluationDetailProps> = ({
     activeEval.initialMaterialFee
   ) : 0;
 
+  const adjustedMonthlyRent = activeEval && activeEval.offMonths && activeEval.offMonths > 0 
+    ? (activeEval.rent * 12) / (12 - activeEval.offMonths)
+    : activeEval?.rent || 0;
+
   const dailyFixedCost = activeEval ? (
     (activeEval.monthlyLabor / 30) + 
     (activeEval.monthlyUtilities / 30) + 
-    (activeEval.rent / 30)
+    (adjustedMonthlyRent / 30)
   ) : 0;
 
   const dailyGrossProfit = activeEval ? (
